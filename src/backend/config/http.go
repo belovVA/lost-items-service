@@ -2,35 +2,46 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-type HTTPConfig struct {
+type httpConfig struct {
 	Port        string        `yaml:"port"  env-default:"8080"`
 	Host        string        `yaml:"host"  env-default:"localhost"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
-func HTTPConfigLoad() (*HTTPConfig, error) {
-	cfgPath := os.Getenv(configPath)
-	if len(cfgPath) == 0 {
-		return nil, fmt.Errorf("%s environment not found", configPath)
+func HTTPConfigLoad() (*httpConfig, error) {
+	path, err := LoadConfig()
+	if err != nil {
+		return nil, err
 	}
 
-	if _, err := os.Stat(cfgPath); err != nil {
-		return nil, fmt.Errorf("%s file not found", cfgPath)
-	}
-
-	var httpCfg HTTPConfig
+	var httpCfg httpConfig
 
 	// Читаем конфиг-файл и заполняем нашу структуру
-	if err := cleanenv.ReadConfig(configPath, &httpCfg); err != nil {
+	if err := cleanenv.ReadConfig(path, &httpCfg); err != nil {
 		return nil, fmt.Errorf("%s", err)
 	}
 
 	return &httpCfg, nil
+}
+
+func (cfg *httpConfig) GetPort() string {
+	return cfg.Port
+}
+
+func (cfg *httpConfig) GetHost() string {
+	return cfg.Host
+}
+
+func (cfg *httpConfig) GetTimeout() time.Duration {
+	return cfg.Timeout
+}
+
+func (cfg *httpConfig) GetIdleTimeout() time.Duration {
+	return cfg.IdleTimeout
 }
