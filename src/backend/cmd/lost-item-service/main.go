@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+
 	"lost-items-service/internal/app"
 )
 
@@ -12,12 +13,12 @@ func main() {
 	a, err := app.NewApp(ctx)
 	if err != nil {
 		slog.Error("failed to initialize app", "error", err)
-		return
+		panic(err)
 	}
 
 	err = a.Run()
 	if err != nil {
 		slog.Error("failed to run app", "error", err)
-		return
+		panic(err)
 	}
 }

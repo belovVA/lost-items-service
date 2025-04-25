@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 const (
-	configPath = "cfgPath"
+	configPath = "./configs/config.yaml"
 )
 
 type PGConfig interface {
@@ -26,14 +28,22 @@ type JWTConfig interface {
 }
 
 func LoadConfig() (string, error) {
-	cfgPath := os.Getenv(configPath)
-	if len(cfgPath) == 0 {
-		return "", fmt.Errorf("%s environment not found", configPath)
+	if err := LoadEnv(); err != nil {
+		return "", err
 	}
+
+	cfgPath := configPath
 
 	if _, err := os.Stat(cfgPath); err != nil {
 		return "", fmt.Errorf("%s file not found", cfgPath)
 	}
 
 	return cfgPath, nil
+}
+
+func LoadEnv() error {
+	if err := godotenv.Load(); err != nil {
+		return fmt.Errorf("error loading .env file: %w", err)
+	}
+	return nil
 }

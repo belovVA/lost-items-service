@@ -22,7 +22,6 @@ func HTTPConfigLoad() (*httpConfig, error) {
 
 	var httpCfg httpConfig
 
-	// Читаем конфиг-файл и заполняем нашу структуру
 	if err := cleanenv.ReadConfig(path, &httpCfg); err != nil {
 		return nil, fmt.Errorf("%s", err)
 	}

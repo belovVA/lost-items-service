@@ -1,0 +1,35 @@
+
+services:
+#  lost-items-service:
+#    build: .
+#    container_name: lost-items-service
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#    networks:
+#      - internal
+
+  db:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lost-items-service
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d lost-items-service'"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./migrations/up:/docker-entrypoint-initdb.d
+
+    networks:
+      - internal
+networks:
+  internal:

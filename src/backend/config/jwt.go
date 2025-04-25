@@ -2,15 +2,16 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type jwtConfig struct {
-	jwt string `env:"JWT_TOKEN" env-required:"true"`
+	Jwt string `env:"JWT_SECRET" env-required:"true"`
 }
 
 func (j *jwtConfig) GetSecret() string {
-	return j.jwt
+	return j.Jwt
 }
 
 func JWTConfigLoad() (*jwtConfig, error) {
@@ -18,6 +19,10 @@ func JWTConfigLoad() (*jwtConfig, error) {
 
 	if err := cleanenv.ReadEnv(&jwtCfg); err != nil {
 		return nil, fmt.Errorf("%s", err)
+	}
+
+	if len(jwtCfg.Jwt) == 0 {
+		return nil, fmt.Errorf("JWT_SECRET enviroment doesnt exist")
 	}
 
 	return &jwtCfg, nil
