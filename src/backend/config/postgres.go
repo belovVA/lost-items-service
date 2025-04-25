@@ -16,8 +16,8 @@ type pgConfig struct {
 	Password string `env:"DATABASE_PASSWORD" env-required:"true"`
 }
 
-func PGConfigLoad() (*pgConfig, error) {
-	path, err := LoadConfig()
+func PGConfigLoad(configPath string) (*pgConfig, error) {
+	path, err := LoadConfig(configPath)
 	if err != nil {
 		return nil, err
 	}

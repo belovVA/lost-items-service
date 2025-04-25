@@ -14,15 +14,15 @@ type httpConfig struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
-func HTTPConfigLoad() (*httpConfig, error) {
-	path, err := LoadConfig()
+func HTTPConfigLoad(configPath string) (*httpConfig, error) {
+	path, err := LoadConfig(configPath)
 	if err != nil {
 		return nil, err
 	}
 
 	var httpCfg httpConfig
 
-	if err := cleanenv.ReadConfig(path, &httpCfg); err != nil {
+	if err = cleanenv.ReadConfig(path, &httpCfg); err != nil {
 		return nil, fmt.Errorf("%s", err)
 	}
 

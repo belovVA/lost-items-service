@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"lost-items-service/config"
 	"lost-items-service/pkg/logger"
 	"lost-items-service/pkg/postgres"
@@ -19,18 +20,28 @@ import (
 
 type App struct {
 	httpCfg config.HTTPConfig
+	dbPool  *pgxpool.Pool
 	router  *chi.Mux
 }
 
 func NewApp(ctx context.Context) (*App, error) {
+	var (
+		envPath    = ".env"
+		configPath = "./configs/config.yaml"
+	)
+
 	_ = logger.InitLogger()
 
-	pgCfg, err := config.PGConfigLoad()
+	if err := config.LoadEnv(envPath); err != nil {
+		return nil, fmt.Errorf("error loading env file, %s", envPath)
+	}
+
+	pgCfg, err := config.PGConfigLoad(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading postgres config: %w", err)
 	}
 
-	htppCfg, err := config.HTTPConfigLoad()
+	htppCfg, err := config.HTTPConfigLoad(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading http config: %w", err)
 	}
@@ -40,7 +51,7 @@ func NewApp(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("error loading jwt config: %w", err)
 	}
 
-	_, err = postgres.InitDBPool(ctx, pgCfg)
+	dbPool, err := postgres.InitDBPool(ctx, pgCfg)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing DB pool: %w", err)
 	}
@@ -57,11 +68,14 @@ func NewApp(ctx context.Context) (*App, error) {
 	return &App{
 			router:  nil,
 			httpCfg: htppCfg,
+			dbPool:  dbPool,
 		},
 		nil
 }
 
 func (a *App) Run() error {
+	defer a.dbPool.Close()
+
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", a.httpCfg.GetPort()),
 		Handler:      a.router,

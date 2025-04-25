@@ -8,10 +8,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const (
-	configPath = "./configs/config.yaml"
-)
-
 type PGConfig interface {
 	GetDSN() string
 }
@@ -27,12 +23,7 @@ type JWTConfig interface {
 	GetSecret() string
 }
 
-func LoadConfig() (string, error) {
-	if err := LoadEnv(); err != nil {
-		return "", err
-	}
-
-	cfgPath := configPath
+func LoadConfig(cfgPath string) (string, error) {
 
 	if _, err := os.Stat(cfgPath); err != nil {
 		return "", fmt.Errorf("%s file not found", cfgPath)
@@ -41,8 +32,8 @@ func LoadConfig() (string, error) {
 	return cfgPath, nil
 }
 
-func LoadEnv() error {
-	if err := godotenv.Load(); err != nil {
+func LoadEnv(path string) error {
+	if err := godotenv.Load(path); err != nil {
 		return fmt.Errorf("error loading .env file: %w", err)
 	}
 	return nil
