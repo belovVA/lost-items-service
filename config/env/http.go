@@ -1,10 +1,11 @@
-package config
+package env
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"lost-items-service/config"
 )
 
 type httpConfig struct {
@@ -15,7 +16,7 @@ type httpConfig struct {
 }
 
 func HTTPConfigLoad(configPath string) (*httpConfig, error) {
-	path, err := LoadConfig(configPath)
+	path, err := config.LoadConfig(configPath)
 	if err != nil {
 		return nil, err
 	}

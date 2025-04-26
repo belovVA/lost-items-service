@@ -24,11 +24,9 @@ type JWTConfig interface {
 }
 
 func LoadConfig(cfgPath string) (string, error) {
-
 	if _, err := os.Stat(cfgPath); err != nil {
 		return "", fmt.Errorf("%s file not found", cfgPath)
 	}
-
 	return cfgPath, nil
 }
 

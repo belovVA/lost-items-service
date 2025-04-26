@@ -1,15 +1,16 @@
-package config
+package env
 
 import (
 	"fmt"
 	"strconv"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"lost-items-service/config"
 )
 
 type pgConfig struct {
 	Name     string `yaml:"database_name" env-required:"true"`
-	Host     string `yaml:"database_host" env-required:"true"`
+	Host     string `env:"DATABASE_HOST" env-required:"true"`
 	Port     string `yaml:"database_port" env-required:"true"`
 	User     string `yaml:"database_user" env-required:"true"`
 	SSLMode  string `yaml:"database_ssl_mode" env-required:"true"`
@@ -17,7 +18,7 @@ type pgConfig struct {
 }
 
 func PGConfigLoad(configPath string) (*pgConfig, error) {
-	path, err := LoadConfig(configPath)
+	path, err := config.LoadConfig(configPath)
 	if err != nil {
 		return nil, err
 	}
