@@ -13,8 +13,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"lost-items-service/config"
-	"lost-items-service/config/env"
+	"lost-items-service/internal/config"
+	cfg "lost-items-service/internal/config/env"
 	"lost-items-service/pkg/logger"
 	"lost-items-service/pkg/postgres"
 )
@@ -37,17 +37,17 @@ func NewApp(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("error loading env file, %s", envPath)
 	}
 
-	pgCfg, err := env.PGConfigLoad(configPath)
+	pgCfg, err := cfg.PGConfigLoad(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading postgres config: %w", err)
 	}
 
-	htppCfg, err := env.HTTPConfigLoad(configPath)
+	htppCfg, err := cfg.HTTPConfigLoad(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading http config: %w", err)
 	}
 
-	_, err = env.JWTConfigLoad()
+	_, err = cfg.JWTConfigLoad()
 	if err != nil {
 		return nil, fmt.Errorf("error loading jwt config: %w", err)
 	}

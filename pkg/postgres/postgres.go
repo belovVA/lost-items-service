@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"lost-items-service/config"
+	"lost-items-service/internal/config"
 )
 
 var (

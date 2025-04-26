@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"lost-items-service/config"
+	"lost-items-service/internal/config"
 )
 
 type pgConfig struct {
