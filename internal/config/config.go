@@ -19,6 +19,13 @@ type HTTPConfig interface {
 	GetIdleTimeout() time.Duration
 }
 
+type RedisConfig interface {
+	Address() string
+	ConnectionTimeout() time.Duration
+	MaxIdle() int
+	IdleTimeout() time.Duration
+}
+
 type JWTConfig interface {
 	GetSecret() string
 }

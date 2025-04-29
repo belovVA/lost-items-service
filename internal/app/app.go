@@ -12,16 +12,21 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"lost-items-service/internal/app/pkg/postgres"
+	"lost-items-service/internal/app/pkg/redis"
+	"lost-items-service/internal/client/cache/redis"
 	"lost-items-service/internal/config"
 	cfg "lost-items-service/internal/config/env"
+	"lost-items-service/internal/db/pgxdb"
+	"lost-items-service/internal/handler"
+	"lost-items-service/internal/repository"
+	"lost-items-service/internal/service"
 	"lost-items-service/pkg/logger"
-	"lost-items-service/pkg/postgres"
 )
 
 type App struct {
 	httpCfg config.HTTPConfig
-	dbPool  *pgxpool.Pool
+	db      pgxdb.DB
 	router  *chi.Mux
 }
 
@@ -31,7 +36,7 @@ func NewApp(ctx context.Context) (*App, error) {
 		configPath = "./configs/config.yaml"
 	)
 
-	_ = logger.InitLogger()
+	logger := logger.InitLogger()
 
 	if err := config.LoadEnv(envPath); err != nil {
 		return nil, fmt.Errorf("error loading env file, %s", envPath)
@@ -47,35 +52,49 @@ func NewApp(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("error loading http config: %w", err)
 	}
 
-	_, err = cfg.JWTConfigLoad()
+	jwtCfg, err := cfg.JWTConfigLoad()
 	if err != nil {
 		return nil, fmt.Errorf("error loading jwt config: %w", err)
 	}
 
-	dbPool, err := postgres.InitDBPool(ctx, pgCfg)
+	redisCfg, err := cfg.RedisConfigLoad(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("error loading redis config: %w", err)
+	}
+
+	pgPool, err := postgres.InitDBPool(ctx, pgCfg)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing DB pool: %w", err)
 	}
 
+	redisPool, err := redis.InitRedisPool(ctx, redisCfg)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing Redis pool: %w", err)
+	}
+
+	redisClient := redisclient.NewClient(redisPool, redisCfg)
+
+	pgDB := pgxdb.NewPgxDB(pgPool)
 	//init repo
-	//repo := repository.NewRepository(dbPool)
+
+	repo := repository.NewRepository(pgDB, redisClient)
 
 	// init service
-	//serv := service.NewService(repo, jwtCfg.Jwt)
+	serv := service.NewService(repo, jwtCfg.Jwt)
 
 	//init router
-	//r := handler.NewRouter(serv, jwtCfg.Jwt, logger)
+	r := handler.NewRouter(serv, jwtCfg.Jwt, logger)
 
 	return &App{
-			router:  nil,
+			router:  r,
 			httpCfg: htppCfg,
-			dbPool:  dbPool,
+			db:      pgDB,
 		},
 		nil
 }
 
 func (a *App) Run() error {
-	defer a.dbPool.Close()
+	defer a.db.Close()
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", a.httpCfg.GetPort()),

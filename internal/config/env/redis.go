@@ -1,12 +1,13 @@
 package env
 
 import (
+	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/ilyakaznacheev/cleanenv"
+	"lost-items-service/internal/config"
 )
 
 const (
@@ -18,63 +19,33 @@ const (
 )
 
 type redisConfig struct {
-	host string
-	port string
+	host string `env:"redis_host" env-required:"true"`
+	port string `env:"redis_port" env-required:"true"`
 
-	connectionTimeout time.Duration
+	connectionTimeout time.Duration `yaml:"redis_connection_timeout_sec" env-default:"5s"`
+	maxIdle           int           `yaml:"redis_max_idle" env-default:"5"`
 
-	maxIdle     int
-	idleTimeout time.Duration
+	idleTimeout time.Duration `yaml:"redis_idle_timeout_sec" env-default:"60s"`
 }
 
-func NewRedisConfig() (*redisConfig, error) {
-	host := os.Getenv(redisHostEnvName)
-	if len(host) == 0 {
-		return nil, errors.New("redis host not found")
-	}
-
-	port := os.Getenv(redisPortEnvName)
-	if len(port) == 0 {
-		return nil, errors.New("redis port not found")
-	}
-
-	connectionTimeoutStr := os.Getenv(redisConnectionTimeoutEnvName)
-	if len(connectionTimeoutStr) == 0 {
-		return nil, errors.New("redis connection timeout not found")
-	}
-
-	connectionTimeout, err := strconv.ParseInt(connectionTimeoutStr, 10, 64)
+func RedisConfigLoad(configPath string) (*redisConfig, error) {
+	path, err := config.LoadConfig(configPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse connection timeout")
+		return nil, err
 	}
 
-	maxIdleStr := os.Getenv(redisMaxIdleEnvName)
-	if len(maxIdleStr) == 0 {
-		return nil, errors.New("redis max idle not found")
+	var redisCfg redisConfig
+
+	// Читаем конфиг-файл и заполняем нашу структуру
+	if err := cleanenv.ReadConfig(path, &redisCfg); err != nil {
+		return nil, fmt.Errorf("%s", err)
 	}
 
-	maxIdle, err := strconv.Atoi(maxIdleStr)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse max idle")
+	if _, err = strconv.Atoi(redisCfg.port); err != nil {
+		return nil, fmt.Errorf("invalid database redis port: %s", err)
 	}
 
-	idleTimeoutStr := os.Getenv(redisIdleTimeoutEnvName)
-	if len(idleTimeoutStr) == 0 {
-		return nil, errors.New("redis idle timeout not found")
-	}
-
-	idleTimeout, err := strconv.ParseInt(idleTimeoutStr, 10, 64)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse idle timeout")
-	}
-
-	return &redisConfig{
-		host:              host,
-		port:              port,
-		connectionTimeout: time.Duration(connectionTimeout) * time.Second,
-		maxIdle:           maxIdle,
-		idleTimeout:       time.Duration(idleTimeout) * time.Second,
-	}, nil
+	return &redisCfg, nil
 }
 
 func (cfg *redisConfig) Address() string {
