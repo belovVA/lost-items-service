@@ -15,7 +15,7 @@ var (
 )
 
 func InitDBPool(ctx context.Context, cfg config.PGConfig) (*pgxpool.Pool, error) {
-	dsn := cfg.GetDSN()
+	dsn := cfg.DSN()
 	bgCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 

@@ -17,7 +17,7 @@ func FromUserModelToRepo(user *model.User) *modelRepo.User {
 	}
 }
 
-func fromModelRepoToUser(user *modelRepo.User) *model.User {
+func FromModelRepoToUser(user *modelRepo.User) *model.User {
 	return &model.User{
 		ID:       user.ID,
 		Name:     user.Name,

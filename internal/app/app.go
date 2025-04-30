@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"lost-items-service/internal/app/pkg/postgres"
 	"lost-items-service/internal/app/pkg/redis"
+	"lost-items-service/internal/client/cache"
 	"lost-items-service/internal/client/cache/redis"
 	"lost-items-service/internal/config"
 	cfg "lost-items-service/internal/config/env"
@@ -25,9 +26,10 @@ import (
 )
 
 type App struct {
-	httpCfg config.HTTPConfig
-	db      pgxdb.DB
-	router  *chi.Mux
+	httpCfg     config.HTTPConfig
+	db          pgxdb.DB
+	redisClient cache.RedisClient
+	router      *chi.Mux
 }
 
 func NewApp(ctx context.Context) (*App, error) {
@@ -47,6 +49,7 @@ func NewApp(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("error loading postgres config: %w", err)
 	}
 
+	log.Info(pgCfg.DSN())
 	htppCfg, err := cfg.HTTPConfigLoad(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading http config: %w", err)
@@ -86,15 +89,19 @@ func NewApp(ctx context.Context) (*App, error) {
 	r := handler.NewRouter(serv, jwtCfg.Jwt, logger)
 
 	return &App{
-			router:  r,
-			httpCfg: htppCfg,
-			db:      pgDB,
+			router:      r,
+			httpCfg:     htppCfg,
+			db:          pgDB,
+			redisClient: redisClient,
 		},
 		nil
 }
 
 func (a *App) Run() error {
-	defer a.db.Close()
+	defer func() {
+		a.db.Close()
+		a.redisClient.Close()
+	}()
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", a.httpCfg.GetPort()),

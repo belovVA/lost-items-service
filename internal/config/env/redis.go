@@ -10,22 +10,14 @@ import (
 	"lost-items-service/internal/config"
 )
 
-const (
-	redisHostEnvName              = "REDIS_HOST"
-	redisPortEnvName              = "REDIS_PORT"
-	redisConnectionTimeoutEnvName = "REDIS_CONNECTION_TIMEOUT_SEC"
-	redisMaxIdleEnvName           = "REDIS_MAX_IDLE"
-	redisIdleTimeoutEnvName       = "REDIS_IDLE_TIMEOUT_SEC"
-)
-
 type redisConfig struct {
-	host string `env:"redis_host" env-required:"true"`
-	port string `env:"redis_port" env-required:"true"`
+	Host string `env:"REDIS_HOST" env-required:"true"`
+	Port string `env:"REDIS_PORT" env-required:"true"`
 
-	connectionTimeout time.Duration `yaml:"redis_connection_timeout_sec" env-default:"5s"`
-	maxIdle           int           `yaml:"redis_max_idle" env-default:"5"`
+	ConnectionTimeoutRedis time.Duration `yaml:"redis_connection_timeout_sec" env-default:"5s"`
+	MaxIdleRedis           int           `yaml:"redis_max_idle" env-default:"5"`
 
-	idleTimeout time.Duration `yaml:"redis_idle_timeout_sec" env-default:"60s"`
+	IdleTimeoutRedis time.Duration `yaml:"redis_idle_timeout_sec" env-default:"60s"`
 }
 
 func RedisConfigLoad(configPath string) (*redisConfig, error) {
@@ -41,7 +33,7 @@ func RedisConfigLoad(configPath string) (*redisConfig, error) {
 		return nil, fmt.Errorf("%s", err)
 	}
 
-	if _, err = strconv.Atoi(redisCfg.port); err != nil {
+	if _, err = strconv.Atoi(redisCfg.Port); err != nil {
 		return nil, fmt.Errorf("invalid database redis port: %s", err)
 	}
 
@@ -49,17 +41,17 @@ func RedisConfigLoad(configPath string) (*redisConfig, error) {
 }
 
 func (cfg *redisConfig) Address() string {
-	return net.JoinHostPort(cfg.host, cfg.port)
+	return net.JoinHostPort(cfg.Host, cfg.Port)
 }
 
 func (cfg *redisConfig) ConnectionTimeout() time.Duration {
-	return cfg.connectionTimeout
+	return cfg.ConnectionTimeoutRedis
 }
 
 func (cfg *redisConfig) MaxIdle() int {
-	return cfg.maxIdle
+	return cfg.MaxIdleRedis
 }
 
 func (cfg *redisConfig) IdleTimeout() time.Duration {
-	return cfg.idleTimeout
+	return cfg.IdleTimeoutRedis
 }

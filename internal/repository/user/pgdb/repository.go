@@ -19,15 +19,10 @@ const (
 	roleColumn     = "role"
 )
 
-const (
-	FailedBuildQuery = "failed Build Query"
-	FailedCreateUser = "failed to Create User"
-	UserNotFound     = "user not found"
-)
-
 type UserPGRepository interface {
-	CreateUser(ctx context.Context, model *model.User) (uuid.UUID, error)
+	CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error)
 	UserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
+	UserByEmail(ctx context.Context, email string) (*model.User, error)
 }
 
 type userRepo struct {

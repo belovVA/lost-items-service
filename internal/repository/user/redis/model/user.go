@@ -1,4 +1,4 @@
-package modelRepo
+package modelredis
 
 import "github.com/google/uuid"
 

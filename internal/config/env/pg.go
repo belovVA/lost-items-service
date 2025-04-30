@@ -26,18 +26,18 @@ func PGConfigLoad(configPath string) (*pgConfig, error) {
 	var pgCfg pgConfig
 
 	// Читаем конфиг-файл и заполняем нашу структуру
-	if err := cleanenv.ReadConfig(path, &pgCfg); err != nil {
+	if err = cleanenv.ReadConfig(path, &pgCfg); err != nil {
 		return nil, fmt.Errorf("%s", err)
 	}
 
-	if _, err := strconv.Atoi(pgCfg.Port); err != nil {
+	if _, err = strconv.Atoi(pgCfg.Port); err != nil {
 		return nil, fmt.Errorf("invalid database port: %s", err)
 	}
 
 	return &pgCfg, nil
 }
 
-func (cfg *pgConfig) GetDSN() string {
+func (cfg *pgConfig) DSN() string {
 	return fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		cfg.Host,

@@ -160,3 +160,7 @@ func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
 
 	return conn, nil
 }
+
+func (c *client) Close() error {
+	return c.pool.Close()
+}

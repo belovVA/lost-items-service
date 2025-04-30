@@ -9,7 +9,7 @@ import (
 )
 
 type PGConfig interface {
-	GetDSN() string
+	DSN() string
 }
 
 type HTTPConfig interface {

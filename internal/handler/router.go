@@ -18,10 +18,12 @@ const (
 
 const (
 	ModeratorRole = "moderator"
-	EmployeeRole  = "employee"
+	AdminRole     = "admin"
+	UserRole      = "user"
 )
 
 type Service interface {
+	AuthService
 }
 
 type Router struct {
@@ -34,13 +36,12 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 
 	r.Use(middleware.NewValidator().Middleware)
 	r.Use(middleware.ContextLoggerMiddleware(logger))
-	//r.Post("/register", http.HandlerFunc(router.registerHandler))
-	//r.Post("/login", http.HandlerFunc(router.loginHandler))
+	r.Post("/register", http.HandlerFunc(router.registerHandler))
+	r.Post("/login", http.HandlerFunc(router.loginHandler))
 
 	r.Group(func(protected chi.Router) {
 		protected.Use(middleware.NewJWT(jwtSecret).Authenticate)
 	})
-	r.Route("/auth", func(r chi.Router) {})
 	return r
 }
 
@@ -56,4 +57,14 @@ func getLogger(r *http.Request) *slog.Logger {
 		return l
 	}
 	return slog.Default() // fallback на глобальный
+}
+
+func (r *Router) registerHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAuthHandler(r.service)
+	h.Register(w, req)
+}
+
+func (r *Router) loginHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAuthHandler(r.service)
+	h.Login(w, req)
 }
