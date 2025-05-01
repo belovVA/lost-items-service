@@ -10,10 +10,11 @@ import (
 )
 
 const (
-	ErrBodyRequest   = "Invalid Request Body"
-	ErrRequestFields = "Invalid Request Fields"
-	ErrInvalidRole   = "invalid role in Request"
-	ErrUUIDParsing   = "invalid ID format"
+	ErrBodyRequest     = "Invalid Request Body"
+	ErrRequestFields   = "Invalid Request Fields"
+	ErrInvalidRole     = "invalid role in Request"
+	ErrUUIDParsing     = "invalid ID format"
+	ErrQueryParameters = "invalid query parameters"
 )
 
 const (
@@ -24,6 +25,7 @@ const (
 
 type Service interface {
 	AuthService
+	UserService
 }
 
 type Router struct {
@@ -41,6 +43,8 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 
 	r.Group(func(protected chi.Router) {
 		protected.Use(middleware.NewJWT(jwtSecret).Authenticate)
+		protected.Get("/user", router.infoOwnHandler)
+		protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
 	})
 	return r
 }
@@ -67,4 +71,14 @@ func (r *Router) registerHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) loginHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewAuthHandler(r.service)
 	h.Login(w, req)
+}
+
+func (r *Router) infoOwnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewUserHandler(r.service)
+	h.InfoOwnUser(w, req)
+}
+
+func (r *Router) infoUserHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewUserHandler(r.service)
+	h.InfoUser(w, req)
 }

@@ -26,7 +26,7 @@ func NewRepository(pg pgxdb.DB, redisClient cache.RedisClient) *UserRepository {
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
-	id, err := r.Pg.CreateUser(ctx, user)
+	id, err := r.Pg.AddUser(ctx, user)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -35,13 +35,12 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (uuid
 	return id, nil
 }
 
-func (r *UserRepository) UserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
-	// Сначала пробуем достать из Redis
+func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+	//Сначала пробуем достать из Redis
 	user, err := r.Redis.GetUser(ctx, id)
 	if err == nil {
 		return user, nil
 	}
-
 	v, err, _ := r.group.Do(id.String(), func() (interface{}, error) {
 		// Достаем из Postgres
 		user, err = r.Pg.UserByID(ctx, id)
@@ -61,7 +60,7 @@ func (r *UserRepository) UserByID(ctx context.Context, id uuid.UUID) (*model.Use
 	return v.(*model.User), nil
 }
 
-func (r *UserRepository) UserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	v, err, _ := r.group.Do(email, func() (interface{}, error) {
 		// Достаем из Postgres
 		user, err := r.Pg.UserByEmail(ctx, email)

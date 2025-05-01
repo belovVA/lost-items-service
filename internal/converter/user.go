@@ -33,3 +33,7 @@ func ToUserFromLoginRequest(request *dto.LoginRequest) *model.User {
 		Password: request.Password,
 	}
 }
+
+func ToUUIDFromStringID(idStr string) (uuid.UUID, error) {
+	return uuid.Parse(idStr)
+}

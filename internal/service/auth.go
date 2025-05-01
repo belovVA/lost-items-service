@@ -33,7 +33,7 @@ func (s *AuthService) Registration(ctx context.Context, user model.User) (*model
 
 	user.Password = hashPass
 
-	if _, err = s.userRepository.UserByEmail(ctx, user.Email); err == nil {
+	if _, err = s.userRepository.GetUserByEmail(ctx, user.Email); err == nil {
 		return nil, fmt.Errorf("user already exist")
 	}
 
@@ -47,7 +47,7 @@ func (s *AuthService) Registration(ctx context.Context, user model.User) (*model
 }
 
 func (s *AuthService) Authenticate(ctx context.Context, user model.User) (string, error) {
-	current, err := s.userRepository.UserByEmail(ctx, user.Email)
+	current, err := s.userRepository.GetUserByEmail(ctx, user.Email)
 	if err != nil {
 		return "", fmt.Errorf("user not found")
 	}

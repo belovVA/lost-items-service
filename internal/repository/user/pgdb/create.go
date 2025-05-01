@@ -9,7 +9,7 @@ import (
 	"lost-items-service/internal/repository/user/pgdb/converter"
 )
 
-func (r *userRepo) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
+func (r *userRepo) AddUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
 	var id uuid.UUID
 	usr := converter.FromUserModelToRepo(user)
 
