@@ -22,12 +22,12 @@ func (r *userRepo) AddUser(ctx context.Context, user *model.User) (uuid.UUID, er
 		ToSql()
 
 	if err != nil {
-		return uuid.Nil, model.ErrorFailedBuildQuery
+		return uuid.Nil, model.ErrorBuildQuery
 	}
 
 	err = r.DB.QueryRow(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return uuid.Nil, model.ErrorFailedBuildQuery
+		return uuid.Nil, model.ErrorBuildQuery
 	}
 
 	return id, nil

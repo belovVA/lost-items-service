@@ -11,3 +11,9 @@ type User struct {
 	Password string    `db:"password"`
 	Role     string    `db:"role"`
 }
+
+type LimitsUsers struct {
+	Role   string `db:"role"`
+	Limit  uint64
+	Offset uint64
+}

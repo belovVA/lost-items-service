@@ -28,3 +28,11 @@ func FromModelRepoToUser(user *modelRepo.User) *model.User {
 		Role:     user.Role,
 	}
 }
+
+func FromInfoUsersToLimitsUsers(info *model.InfoUsers) *modelRepo.LimitsUsers {
+	return &modelRepo.LimitsUsers{
+		Role:   info.Role,
+		Limit:  uint64(info.Limit),
+		Offset: uint64((info.Page - 1) * info.Limit),
+	}
+}

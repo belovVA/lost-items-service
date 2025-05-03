@@ -164,3 +164,41 @@ func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
 func (c *client) Close() error {
 	return c.pool.Close()
 }
+
+func (c *client) Del(ctx context.Context, key string) error {
+	return c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+		_, err := conn.Do("DEL", key)
+		return err
+	})
+}
+
+func (c *client) DeleteByPattern(ctx context.Context, pattern string) error {
+	return c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+		iter := 0
+		for {
+			reply, err := redis.Values(conn.Do("SCAN", iter, "MATCH", pattern, "COUNT", 100))
+			if err != nil {
+				return err
+			}
+
+			var keys []string
+			_, err = redis.Scan(reply, &iter, &keys)
+			if err != nil {
+				return err
+			}
+
+			if len(keys) > 0 {
+				args := make([]interface{}, len(keys))
+				for i, k := range keys {
+					args[i] = k
+				}
+				_, _ = conn.Do("DEL", args...)
+			}
+
+			if iter == 0 {
+				break
+			}
+		}
+		return nil
+	})
+}

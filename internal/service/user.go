@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"lost-items-service/internal/converter"
@@ -26,10 +25,21 @@ func (s *UserService) GetOwnUser(ctx context.Context) (*model.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get uuid")
 	}
-	log.Println("aba")
 	return s.userRepository.GetUserByID(ctx, userID)
 }
 
 func (s *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	return s.userRepository.GetUserByID(ctx, id)
+}
+
+func (s *UserService) InfoUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error) {
+	return s.userRepository.GetUsers(ctx, limits)
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, user *model.User) error {
+	return s.userRepository.UpdateUser(ctx, user)
+}
+
+func (s *UserService) DeleteUser(ctx context.Context, user *model.User) error {
+	return s.userRepository.DeleteUser(ctx, user)
 }

@@ -3,7 +3,8 @@ package model
 import "github.com/pkg/errors"
 
 var (
-	ErrorUserNotFound     = errors.New("user not found")
-	ErrorFailedBuildQuery = errors.New("failed Build Query")
-	ErrorFailedCreateUser = errors.New("failed to Create User")
+	ErrorUserNotFound = errors.New("user not found")
+	ErrorBuildQuery   = errors.New("failed Build Query")
+	ErrorScanRows     = errors.New("failed Scan Rows")
+	ErrorExecuteQuery = errors.New("failed Execute Query")
 )

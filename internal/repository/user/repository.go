@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"golang.org/x/sync/singleflight"
@@ -25,57 +26,152 @@ func NewRepository(pg pgxdb.DB, redisClient cache.RedisClient) *UserRepository {
 	}
 }
 
+// 1. GetUserByID: пробует Redis.GetUser, на промахе — Postgres + кеш.
+func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+	// 1.1) Попытка из кэша
+	if user, err := r.Redis.GetUser(ctx, id); err == nil {
+		return user, nil
+	}
+
+	// 1.2) Cache-miss: дедупликация запросов к БД
+	v, err, _ := r.group.Do(id.String(), func() (interface{}, error) {
+
+		// 1.2.1) Читаем из Postgres
+		user, err := r.Pg.GetUserByID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		go func(u *model.User) {
+			// 1.2.2) Кэшируем хешом
+			if _, err = r.Redis.CreateUser(ctx, user); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
+			}
+			// 1.2.3) Кэшируем индекс email→ID
+			if err = r.Redis.SetEmailIndex(ctx, user.Email, user.ID); err != nil {
+				// log.Warnf("redis SET email index failed: %v", err)
+			}
+		}(user)
+
+		return user, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return v.(*model.User), nil
+}
+
 func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
+	// 2.1) Сохраняем в БД
 	id, err := r.Pg.AddUser(ctx, user)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	_, _ = r.Redis.CreateUser(ctx, user)
+	user.ID = id
+
+	// 2.2) Кэшируем хешом
+	if _, err = r.Redis.CreateUser(ctx, user); err != nil {
+		// log.Warnf("redis HSET failed: %v", err)
+	}
+	// 2.3) Кэшируем индекс по email
+	if err = r.Redis.SetEmailIndex(ctx, user.Email, id); err != nil {
+		// log.Warnf("redis SET email index failed: %v", err)
+	}
 
 	return id, nil
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
-	//Сначала пробуем достать из Redis
-	user, err := r.Redis.GetUser(ctx, id)
-	if err == nil {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	// 3.1) Попытка из кэша по email
+	if user, err := r.Redis.GetUserByEmail(ctx, email); err == nil {
 		return user, nil
 	}
-	v, err, _ := r.group.Do(id.String(), func() (interface{}, error) {
-		// Достаем из Postgres
-		user, err = r.Pg.UserByID(ctx, id)
+
+	// 3.2) Cache-miss: дедупликация по строковому ключу email
+	v, err, _ := r.group.Do(email, func() (interface{}, error) {
+		// 3.2.1) Читаем из Postgres
+		user, err := r.Pg.GetUserByEmail(ctx, email)
 		if err != nil {
 			return nil, err
 		}
+		// 3.2.2) Кэшируем хешом
 
-		_, _ = r.Redis.CreateUser(ctx, user)
+		go func(u *model.User) {
+			if _, err = r.Redis.CreateUser(ctx, user); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
+			}
+			// 3.2.3) Кэшируем индекс email→ID
+			if err = r.Redis.SetEmailIndex(ctx, email, user.ID); err != nil {
+				// log.Warnf("redis SET email index failed: %v", err)
+			}
+		}(user)
 
 		return user, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
-
 	return v.(*model.User), nil
 }
 
-func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
-	v, err, _ := r.group.Do(email, func() (interface{}, error) {
-		// Достаем из Postgres
-		user, err := r.Pg.UserByEmail(ctx, email)
+func (r *UserRepository) GetUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error) {
+	if users, err := r.Redis.GetUsers(ctx, limits); err == nil {
+		return users, nil
+	}
+	// 3.2) Cache-miss: дедупликация по строковому ключу email
+	groupKey := fmt.Sprintf("%s:%d:%d", limits.Role, limits.Page, limits.Limit)
+	v, err, _ := r.group.Do(groupKey, func() (interface{}, error) {
+		// 3.2.1) Читаем из Postgres
+		users, err := r.Pg.GetListUsers(ctx, limits)
 		if err != nil {
 			return nil, err
 		}
+		// 3.2.2) Кэшируем хешом
 
-		_, _ = r.Redis.CreateUser(ctx, user)
+		go func(u []*model.User) {
+			if err = r.Redis.CreateUsersOrder(ctx, groupKey, u); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
 
-		return user, nil
+			}
+		}(users)
+
+		return users, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
+	return v.([]*model.User), nil
+}
 
-	return v.(*model.User), nil
+func (r *UserRepository) UpdateUser(ctx context.Context, user *model.User) error {
+	// Обновляем в БД
+	if err := r.Pg.UpdateUserByID(ctx, user); err != nil {
+		return err
+	}
+
+	// Удаляем кэш по ID (основная запись)
+	_ = r.Redis.Delete(ctx, user.ID.String())
+
+	// Удаляем индекс по email
+	_ = r.Redis.DeleteEmailIndex(ctx, user.Email)
+
+	// Удаляем все связанные страницы кэша — нужен ключевой паттерн
+	_ = r.Redis.DeleteUserPages(ctx, user.Role)
+
+	return nil
+}
+
+func (r *UserRepository) DeleteUser(ctx context.Context, user *model.User) error {
+	// Удаляем из Postgres
+	if err := r.Pg.DeleteUserByID(ctx, user); err != nil {
+		return err
+	}
+
+	// Чистим кэш
+	_ = r.Redis.Delete(ctx, user.ID.String())
+	_ = r.Redis.DeleteEmailIndex(ctx, user.Email)
+	_ = r.Redis.DeleteUserPages(ctx, user.Role)
+
+	return nil
 }

@@ -11,6 +11,8 @@ type RedisClient interface {
 	HGetAll(ctx context.Context, key string) ([]interface{}, error)
 	Get(ctx context.Context, key string) (interface{}, error)
 	Expire(ctx context.Context, key string, expiration time.Duration) error
+	Del(ctx context.Context, key string) error
 	Ping(ctx context.Context) error
 	Close() error
+	DeleteByPattern(ctx context.Context, pattern string) error
 }

@@ -18,8 +18,8 @@ func ToUserFromCreateUserRequest(request *dto.RegisterRequest) *model.User {
 	}
 }
 
-func ToRegisterResponseFromUser(user *model.User) *dto.RegisterResponse {
-	return &dto.RegisterResponse{
+func ToRegisterResponseFromUser(user *model.User) *dto.UserResponse {
+	return &dto.UserResponse{
 		ID:    user.ID.String(),
 		Email: user.Email,
 		Role:  user.Role,
