@@ -47,10 +47,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.
 			if _, err = r.Redis.CreateUser(ctx, user); err != nil {
 				// log.Warnf("redis HSET failed: %v", err)
 			}
-			// 1.2.3) Кэшируем индекс email→ID
-			if err = r.Redis.SetEmailIndex(ctx, user.Email, user.ID); err != nil {
-				// log.Warnf("redis SET email index failed: %v", err)
-			}
+
 		}(user)
 
 		return user, nil
@@ -73,10 +70,6 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (uuid
 	// 2.2) Кэшируем хешом
 	if _, err = r.Redis.CreateUser(ctx, user); err != nil {
 		// log.Warnf("redis HSET failed: %v", err)
-	}
-	// 2.3) Кэшируем индекс по email
-	if err = r.Redis.SetEmailIndex(ctx, user.Email, id); err != nil {
-		// log.Warnf("redis SET email index failed: %v", err)
 	}
 
 	return id, nil
@@ -101,10 +94,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 			if _, err = r.Redis.CreateUser(ctx, user); err != nil {
 				// log.Warnf("redis HSET failed: %v", err)
 			}
-			// 3.2.3) Кэшируем индекс email→ID
-			if err = r.Redis.SetEmailIndex(ctx, email, user.ID); err != nil {
-				// log.Warnf("redis SET email index failed: %v", err)
-			}
+
 		}(user)
 
 		return user, nil

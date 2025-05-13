@@ -10,11 +10,14 @@ import (
 
 type UserRedisRepository interface {
 	CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error)
+	CreateUsersOrder(ctx context.Context, cachedKey string, users []*model.User) error
+
 	GetUser(ctx context.Context, id uuid.UUID) (*model.User, error)
-	SetEmailIndex(ctx context.Context, email string, id uuid.UUID) error
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	GetUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error)
-	CreateUsersOrder(ctx context.Context, cachedKey string, users []*model.User) error
+
+	SetEmailIndex(ctx context.Context, email string, id uuid.UUID) error
+
 	Delete(ctx context.Context, key string) error
 	DeleteUserPages(ctx context.Context, role string) error
 	DeleteEmailIndex(ctx context.Context, email string) error

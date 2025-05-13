@@ -7,11 +7,11 @@ import (
 	"github.com/google/uuid"
 	"lost-items-service/internal/model"
 	"lost-items-service/internal/repository/user/pgdb/converter"
-	modelRepo "lost-items-service/internal/repository/user/pgdb/model"
+	modelpg "lost-items-service/internal/repository/user/pgdb/model"
 )
 
 func (r *userRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
-	var user modelRepo.User
+	var user modelpg.User
 
 	query, args, err := sq.
 		Select(
@@ -37,14 +37,14 @@ func (r *userRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, 
 		&user.Role,
 	)
 	if err != nil {
-		return nil, model.ErrorUserNotFound
+		return nil, model.ErrorNotFound
 	}
 
 	return converter.FromModelRepoToUser(&user), nil
 }
 
 func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
-	var user modelRepo.User
+	var user modelpg.User
 
 	query, args, err := sq.
 		Select(
@@ -70,7 +70,7 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*model.Use
 		&user.Role,
 	)
 	if err != nil {
-		return nil, model.ErrorUserNotFound
+		return nil, model.ErrorNotFound
 	}
 
 	return converter.FromModelRepoToUser(&user), nil
@@ -124,7 +124,7 @@ func (r *userRepo) GetListUsers(ctx context.Context, info *model.InfoUsers) ([]*
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var user modelRepo.User
+		var user modelpg.User
 		if err = rows.Scan(
 			&user.ID,
 			&user.Name,

@@ -1,13 +1,20 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Announcement struct {
-	ID          uuid.UUID
-	Title       string
-	Description string
-	Address     string
-	Contacts    string
-	Images      []Image
-	OwnerID     uuid.UUID
+	ID               uuid.UUID
+	Title            string
+	Description      string
+	Address          string
+	Date             time.Time
+	Contacts         string
+	ModerationStatus string
+	SearchedStatus   bool
+	Images           []Image
+	OwnerID          uuid.UUID
 }

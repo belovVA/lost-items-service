@@ -16,8 +16,14 @@ type UserRepository interface {
 	DeleteUser(ctx context.Context, user *model.User) error
 }
 
+type AnnRepository interface {
+	CreateAnn(ctx context.Context, ann *model.Announcement) (uuid.UUID, error)
+	GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
+}
+
 type Repository interface {
 	UserRepository
+	AnnRepository
 }
 
 type Service struct {

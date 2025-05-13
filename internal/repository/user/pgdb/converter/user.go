@@ -2,11 +2,11 @@ package converter
 
 import (
 	"lost-items-service/internal/model"
-	modelRepo "lost-items-service/internal/repository/user/pgdb/model"
+	modelpg "lost-items-service/internal/repository/user/pgdb/model"
 )
 
-func FromUserModelToRepo(user *model.User) *modelRepo.User {
-	return &modelRepo.User{
+func FromUserModelToRepo(user *model.User) *modelpg.User {
+	return &modelpg.User{
 		ID:       user.ID,
 		Name:     user.Name,
 		Surname:  user.Surname,
@@ -17,7 +17,7 @@ func FromUserModelToRepo(user *model.User) *modelRepo.User {
 	}
 }
 
-func FromModelRepoToUser(user *modelRepo.User) *model.User {
+func FromModelRepoToUser(user *modelpg.User) *model.User {
 	return &model.User{
 		ID:       user.ID,
 		Name:     user.Name,
@@ -29,8 +29,8 @@ func FromModelRepoToUser(user *modelRepo.User) *model.User {
 	}
 }
 
-func FromInfoUsersToLimitsUsers(info *model.InfoUsers) *modelRepo.LimitsUsers {
-	return &modelRepo.LimitsUsers{
+func FromInfoUsersToLimitsUsers(info *model.InfoUsers) *modelpg.LimitsUsers {
+	return &modelpg.LimitsUsers{
 		Role:   info.Role,
 		Limit:  uint64(info.Limit),
 		Offset: uint64((info.Page - 1) * info.Limit),

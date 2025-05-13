@@ -19,7 +19,7 @@ func (r *userRepo) GetUser(ctx context.Context, id uuid.UUID) (*model.User, erro
 		return nil, err
 	}
 	if len(values) == 0 {
-		return nil, model.ErrorUserNotFound
+		return nil, model.ErrorNotFound
 	}
 
 	var user modelredis.User
@@ -67,5 +67,5 @@ func (r *userRepo) GetUsers(ctx context.Context, limits *model.InfoUsers) ([]*mo
 			_ = r.cl.Del(ctx, cacheKey)
 		}
 	}
-	return nil, model.ErrorUserNotFound
+	return nil, model.ErrorNotFound
 }

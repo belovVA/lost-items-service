@@ -29,7 +29,7 @@ func (r *userRepo) DeleteUserByID(ctx context.Context, user *model.User) error {
 
 	// Проверяем, что была затронута хотя бы одна строка
 	if cmdTag.RowsAffected() != 1 {
-		return model.ErrorUserNotFound
+		return model.ErrorNotFound
 	}
 
 	return nil

@@ -21,10 +21,13 @@ const (
 
 type UserPGRepository interface {
 	AddUser(ctx context.Context, user *model.User) (uuid.UUID, error)
+
 	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	GetListUsers(ctx context.Context, info *model.InfoUsers) ([]*model.User, error)
+
 	UpdateUserByID(ctx context.Context, user *model.User) error
+
 	DeleteUserByID(ctx context.Context, user *model.User) error
 }
 

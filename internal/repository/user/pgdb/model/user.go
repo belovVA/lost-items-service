@@ -1,4 +1,4 @@
-package modelRepo
+package modelpg
 
 import "github.com/google/uuid"
 
