@@ -30,37 +30,37 @@ func NewAuthHandler(service AuthService) *AuthHandlers {
 
 func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	var req dto.RegisterRequest
-	//logger := getLogger(r)
+	logger := getLogger(r)
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteError(w, ErrBodyRequest, http.StatusBadRequest)
-		//logger.Info(ErrBodyRequest, slog.String(ErrorKey, err.Error()))
+		logger.Info(ErrBodyRequest, slog.String(ErrorKey, err.Error()))
 		return
 	}
 
 	v := getValidator(r)
 	if err := v.Struct(req); err != nil {
 		response.WriteError(w, ErrRequestFields, http.StatusBadRequest)
-		//logger.Info(ErrRequestFields, slog.String(ErrorKey, err.Error()))
+		logger.Info(ErrRequestFields, slog.String(ErrorKey, err.Error()))
 		return
 	}
 
 	userModel := *converter.ToUserFromCreateUserRequest(&req)
 	if err := validateRole(userModel.Role); err != nil {
 		response.WriteError(w, ErrInvalidRole, http.StatusBadRequest)
-		//logger.Info(ErrInvalidRole, slog.String(ErrorKey, err.Error()))
+		logger.Info(ErrInvalidRole, slog.String(ErrorKey, err.Error()))
 		return
 	}
 
 	user, err := h.Service.Registration(r.Context(), userModel)
 	if err != nil {
 		response.WriteError(w, err.Error(), http.StatusBadRequest)
-		//logger.Info("error to register user", slog.String(ErrorKey, err.Error()))
+		logger.Info("error to register user", slog.String(ErrorKey, err.Error()))
 		return
 	}
 
 	resp := converter.ToRegisterResponseFromUser(user)
-	//logger.InfoContext(r.Context(), "successful register", slog.String(UserIDKey, user.ID.String()))
+	logger.InfoContext(r.Context(), "successful register", slog.String(UserIDKey, user.ID.String()))
 
 	response.SuccessJSON(w, resp, http.StatusCreated)
 }
@@ -71,21 +71,21 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.WriteError(w, ErrBodyRequest, http.StatusUnauthorized)
-		//logger.Info(ErrBodyRequest, slog.String(ErrorKey, err.Error()))
+		logger.Info(ErrBodyRequest, slog.String(ErrorKey, err.Error()))
 		return
 	}
 
 	v := getValidator(r)
 	if err := v.Struct(req); err != nil {
 		response.WriteError(w, ErrRequestFields, http.StatusUnauthorized)
-		//logger.Info(ErrRequestFields, slog.String(ErrorKey, err.Error()))
+		logger.Info(ErrRequestFields, slog.String(ErrorKey, err.Error()))
 		return
 	}
 
 	token, err := h.Service.Authenticate(r.Context(), *converter.ToUserFromLoginRequest(&req))
 	if err != nil {
 		response.WriteError(w, err.Error(), http.StatusUnauthorized)
-		//logger.Info("error to login user", slog.String(ErrorKey, err.Error()))
+		logger.Info("error to login user", slog.String(ErrorKey, err.Error()))
 		return
 	}
 

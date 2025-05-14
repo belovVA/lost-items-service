@@ -17,10 +17,17 @@ const (
 	ErrQueryParameters = "invalid query parameters"
 )
 
+// Roles
 const (
 	ModeratorRole = "moderator"
 	AdminRole     = "admin"
 	UserRole      = "user"
+)
+
+// Logging
+const (
+	UserIDKey = "userId"
+	ErrorKey  = "error"
 )
 
 type Service interface {
@@ -34,17 +41,30 @@ type Router struct {
 
 func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux {
 	r := chi.NewRouter()
+	// Настройка CORS middleware
+
+	//r.Use(cors.Handler(cors.Options{
+	//	AllowedOrigins:   []string{"http://localhost:3000"}, // Разрешить запросы с фронтенда
+	//	AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	//	AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+	//	ExposedHeaders:   []string{"Link"},
+	//	AllowCredentials: true,
+	//	MaxAge:           300, // Максимальное время кеширования preflight запросов
+	//}))
+
 	router := &Router{service: service}
+	r.Route("/api/v1", func(api chi.Router) {
+		api.Use(middleware.NewValidator().Middleware)
+		api.Use(middleware.ContextLoggerMiddleware(logger))
 
-	r.Use(middleware.NewValidator().Middleware)
-	r.Use(middleware.ContextLoggerMiddleware(logger))
-	r.Post("/register", http.HandlerFunc(router.registerHandler))
-	r.Post("/login", http.HandlerFunc(router.loginHandler))
+		api.Post("/register", http.HandlerFunc(router.registerHandler))
+		api.Post("/login", http.HandlerFunc(router.loginHandler))
 
-	r.Group(func(protected chi.Router) {
-		protected.Use(middleware.NewJWT(jwtSecret).Authenticate)
-		protected.Get("/user", router.infoOwnHandler)
-		protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
+		api.Group(func(protected chi.Router) {
+			protected.Use(middleware.NewJWT(jwtSecret).Authenticate)
+			protected.Get("/user", router.infoOwnHandler)
+			protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
+		})
 	})
 	return r
 }
