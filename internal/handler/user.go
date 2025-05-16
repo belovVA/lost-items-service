@@ -93,10 +93,12 @@ func (h *UserHandlers) UsersInfo(w http.ResponseWriter, r *http.Request) {
 
 	infoUsers := converter.FromInfoUsersRequestToInfoUsersModel(&reqBody, &reqQuery)
 
-	if err := validateRole(infoUsers.Role); err != nil {
-		response.WriteError(w, ErrInvalidRole, http.StatusBadRequest)
-		logger.InfoContext(r.Context(), ErrInvalidRole, slog.String(ErrorKey, err.Error()))
-		return
+	if infoUsers.Role != "" {
+		if err := validateRole(infoUsers.Role); err != nil {
+			response.WriteError(w, ErrInvalidRole, http.StatusBadRequest)
+			logger.InfoContext(r.Context(), ErrInvalidRole, slog.String(ErrorKey, err.Error()))
+			return
+		}
 	}
 
 	//
@@ -105,9 +107,13 @@ func (h *UserHandlers) UsersInfo(w http.ResponseWriter, r *http.Request) {
 		logger.InfoContext(r.Context(), ErrBodyRequest, slog.String(ErrorKey, err.Error()))
 		response.WriteError(w, err.Error(), http.StatusInternalServerError)
 	}
+	logger.Info("success info users", slog.String("role order", infoUsers.Role), slog.String("search word", infoUsers.Search))
+	usersResp := make([]dto.UserShortResponse, 0, len(users))
+	for _, user := range users {
+		usersResp = append(usersResp, converter.FromUserToUserShortResponse(user))
+	}
 
-	logger.Info("success info users", slog.String("role order", infoUsers.Role))
-	response.SuccessJSON(w, users, http.StatusOK)
+	response.SuccessJSON(w, usersResp, http.StatusOK)
 }
 
 func (h *UserHandlers) UpdateUser(w http.ResponseWriter, r *http.Request) {

@@ -67,6 +67,8 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 			protected.Patch("/user/{userId}", router.updateUserHandler)
 			protected.Delete("/user/{userId}", router.deleteUserHandler)
 			protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
+			protected.With(middleware.RequireRoles(AdminRole)).Post("/users", router.infoAllUsersHandler)
+
 		})
 	})
 	return r
@@ -114,4 +116,9 @@ func (r *Router) updateUserHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) deleteUserHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewUserHandler(r.service)
 	h.DeleteUser(w, req)
+}
+
+func (r *Router) infoAllUsersHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewUserHandler(r.service)
+	h.UsersInfo(w, req)
 }

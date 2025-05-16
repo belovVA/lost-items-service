@@ -14,6 +14,7 @@ type User struct {
 
 type LimitsUsers struct {
 	Role   string `db:"role"`
+	Search string
 	Limit  uint64
 	Offset uint64
 }

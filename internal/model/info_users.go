@@ -1,7 +1,8 @@
 package model
 
 type InfoUsers struct {
-	Role  string
-	Page  int
-	Limit int
+	Role   string
+	Search string
+	Page   int
+	Limit  int
 }

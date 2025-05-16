@@ -110,7 +110,7 @@ func (r *UserRepository) GetUsers(ctx context.Context, limits *model.InfoUsers) 
 		return users, nil
 	}
 	// 3.2) Cache-miss: дедупликация по строковому ключу email
-	groupKey := fmt.Sprintf("%s:%d:%d", limits.Role, limits.Page, limits.Limit)
+	groupKey := fmt.Sprintf("%s:%s:%d:%d", limits.Role, limits.Search, limits.Page, limits.Limit)
 	v, err, _ := r.group.Do(groupKey, func() (interface{}, error) {
 		// 3.2.1) Читаем из Postgres
 		users, err := r.Pg.GetListUsers(ctx, limits)

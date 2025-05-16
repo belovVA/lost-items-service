@@ -3,11 +3,17 @@ package dto
 import "github.com/google/uuid"
 
 type InfoUsersRequestBody struct {
-	Role string `json:"role,omitempty"`
+	Role   string `json:"role,omitempty"`
+	Search string `json:"search,omitempty"`
 }
 
 type InfoUsersResponse struct {
 	Data []UserShortResponse
+}
+type UserShortResponse struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
 }
 
 type InfoUsersRequestQuery struct {

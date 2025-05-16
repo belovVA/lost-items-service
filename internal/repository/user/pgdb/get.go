@@ -112,6 +112,17 @@ func (r *userRepo) GetListUsers(ctx context.Context, info *model.InfoUsers) ([]*
 	if limits.Role != "" {
 		req = req.Where(sq.Eq{roleColumn: limits.Role})
 	}
+	if limits.Search != "" {
+		searchPattern := "%" + limits.Search + "%"
+		req = req.Where(sq.Or{
+			sq.ILike{nameColumn: searchPattern},
+			sq.ILike{surnameColumn: searchPattern},
+			sq.ILike{emailColumn: searchPattern},
+			sq.ILike{phoneColumn: searchPattern},
+			sq.ILike{roleColumn: searchPattern},
+		})
+	}
+
 	req = req.Limit(limits.Limit).Offset(limits.Offset)
 
 	query, args, err := req.ToSql()
