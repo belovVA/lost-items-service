@@ -26,8 +26,9 @@ const (
 
 // Logging
 const (
-	UserIDKey = "userId"
-	ErrorKey  = "error"
+	UserIDKey       = "userId"
+	ErrorKey        = "error"
+	ErrorServiceMsg = "service error"
 )
 
 type Service interface {
@@ -63,6 +64,8 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 		api.Group(func(protected chi.Router) {
 			protected.Use(middleware.NewJWT(jwtSecret).Authenticate)
 			protected.Get("/user", router.infoOwnHandler)
+			protected.Patch("/user/{userId}", router.updateUserHandler)
+			protected.Delete("/user/{userId}", router.deleteUserHandler)
 			protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
 		})
 	})
@@ -101,4 +104,14 @@ func (r *Router) infoOwnHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) infoUserHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewUserHandler(r.service)
 	h.InfoUser(w, req)
+}
+
+func (r *Router) updateUserHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewUserHandler(r.service)
+	h.UpdateUser(w, req)
+}
+
+func (r *Router) deleteUserHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewUserHandler(r.service)
+	h.DeleteUser(w, req)
 }

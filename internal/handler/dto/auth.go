@@ -14,7 +14,7 @@ type LoginRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
-type UserResponse struct {
+type UserShortResponse struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
 	Role  string `json:"role"`

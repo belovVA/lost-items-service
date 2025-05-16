@@ -12,18 +12,26 @@ func (r *userRepo) UpdateUserByID(ctx context.Context, user *model.User) error {
 
 	usr := converter.FromUserModelToRepo(user)
 
-	query, args, err := sq.
-		Update(usersTable).
+	builder := sq.Update(usersTable).
 		Set(nameColumn, usr.Name).
 		Set(surnameColumn, usr.Surname).
 		Set(emailColumn, usr.Email).
-		Set(phoneColumn, usr.Phone).
-		Set(passwordColumn, usr.Password).
-		Set(roleColumn, usr.Role).
-		Where(sq.Eq{userIDColumn: usr.ID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
+		Set(phoneColumn, usr.Phone)
 
+	// Изменяем password если не пустой
+	if usr.Password != "" {
+		builder = builder.Set(passwordColumn, usr.Password)
+	}
+
+	// Изменяем роль при наличии
+	if usr.Role != "" {
+		builder = builder.Set(roleColumn, usr.Role)
+	}
+
+	builder = builder.Where(sq.Eq{userIDColumn: usr.ID}).
+		PlaceholderFormat(sq.Dollar)
+
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return model.ErrorBuildQuery
 	}
@@ -33,10 +41,10 @@ func (r *userRepo) UpdateUserByID(ctx context.Context, user *model.User) error {
 		return model.ErrorExecuteQuery
 	}
 
-	// Проверяем, что была затронута хотя бы одна строка
 	if cmdTag.RowsAffected() != 1 {
 		return model.ErrorNotFound
 	}
 
 	return nil
+
 }
