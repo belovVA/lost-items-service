@@ -60,8 +60,8 @@ func (h *UserHandlers) InfoUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.Service.GetUserByID(r.Context(), userID)
 	if err != nil {
-		logger.InfoContext(r.Context(), "error get info other user", slog.String("otherID", userIDStr))
 		response.WriteError(w, err.Error(), http.StatusNotFound)
+		logger.InfoContext(r.Context(), "error get info other user", slog.String("otherID", userIDStr))
 		return
 	}
 

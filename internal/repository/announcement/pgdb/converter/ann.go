@@ -15,7 +15,7 @@ func FromAnnModelToRepo(a *model.Announcement) *modelpg.Announcement {
 		Contacts:         a.Contacts,
 		ModerationStatus: a.ModerationStatus,
 		SearchedStatus:   a.SearchedStatus,
-		OwnerID:          a.OwnerID,
+		UserID:           a.UserID,
 	}
 }
 
@@ -29,6 +29,6 @@ func FromRepoToAnnModel(a *modelpg.Announcement) *model.Announcement {
 		Contacts:         a.Contacts,
 		ModerationStatus: a.ModerationStatus,
 		SearchedStatus:   a.SearchedStatus,
-		OwnerID:          a.OwnerID,
+		UserID:           a.UserID,
 	}
 }

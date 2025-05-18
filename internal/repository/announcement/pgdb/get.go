@@ -23,7 +23,7 @@ func (r *annRepo) GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announce
 			annContactsColumn,
 			annSearchedStatusColumn,
 			annModerationStatusColumn,
-			ownerIDColumn,
+			userIDColumn,
 		).
 		From(annTable).
 		Where(sq.Eq{annIDColumn: id}).
@@ -39,7 +39,7 @@ func (r *annRepo) GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announce
 		&ann.Contacts,
 		&ann.SearchedStatus,
 		&ann.ModerationStatus,
-		&ann.OwnerID,
+		&ann.UserID,
 	)
 
 	if err != nil {

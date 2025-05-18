@@ -2,6 +2,7 @@ package pgdb
 
 import (
 	"context"
+	"log"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
@@ -23,7 +24,7 @@ func (r *annRepo) AddAnn(ctx context.Context, ann *model.Announcement) (uuid.UUI
 			annContactsColumn,
 			annSearchedStatusColumn,
 			annModerationStatusColumn,
-			ownerIDColumn,
+			userIDColumn,
 		).
 		Values(
 			a.Title,
@@ -33,7 +34,7 @@ func (r *annRepo) AddAnn(ctx context.Context, ann *model.Announcement) (uuid.UUI
 			a.Contacts,
 			a.SearchedStatus,
 			a.ModerationStatus,
-			a.OwnerID).
+			a.UserID).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING " + annIDColumn).
 		ToSql()
@@ -44,7 +45,8 @@ func (r *annRepo) AddAnn(ctx context.Context, ann *model.Announcement) (uuid.UUI
 
 	err = r.DB.QueryRow(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return uuid.Nil, model.ErrorBuildQuery
+		log.Println(ann)
+		return uuid.Nil, model.ErrorExecuteQuery
 	}
 
 	return id, nil

@@ -21,6 +21,9 @@ type AnnRepository interface {
 	GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
 }
 
+type ImageRepository interface {
+}
+
 type Repository interface {
 	UserRepository
 	AnnRepository
@@ -29,11 +32,13 @@ type Repository interface {
 type Service struct {
 	*AuthService
 	*UserService
+	*AnnService
 }
 
 func NewService(repo Repository, jwtSecret string) *Service {
 	return &Service{
-		AuthService: &AuthService{repo, jwtSecret},
-		UserService: &UserService{repo},
+		AuthService: NewAuthService(repo, jwtSecret),
+		UserService: NewUserService(repo),
+		AnnService:  NewAnnService(repo),
 	}
 }

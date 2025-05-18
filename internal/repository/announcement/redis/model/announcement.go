@@ -15,5 +15,5 @@ type Announcement struct {
 	Contacts         string    `redis:"contacts"`
 	ModerationStatus string    `redis:"moderation_status"`
 	SearchedStatus   bool      `redis:"searched_status"`
-	OwnerID          uuid.UUID `redis:"owner_id"`
+	UserID           uuid.UUID `redis:"owner_id"`
 }

@@ -15,5 +15,5 @@ type Announcement struct {
 	Contacts         string    `db:"contacts"`
 	ModerationStatus string    `db:"moderation_status"`
 	SearchedStatus   bool      `db:"searched_status"`
-	OwnerID          uuid.UUID `db:"owner_id"`
+	UserID           uuid.UUID `db:"owner_id"`
 }

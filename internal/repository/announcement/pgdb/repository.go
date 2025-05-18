@@ -18,7 +18,7 @@ const (
 	annContactsColumn         = "contacts"
 	annSearchedStatusColumn   = "searched_status"
 	annModerationStatusColumn = "moderation_status"
-	ownerIDColumn             = "owner_id"
+	userIDColumn              = "user_id"
 )
 
 type AnnPGRepository interface {

@@ -15,7 +15,7 @@ func FromAnnModelToRedis(a *model.Announcement) *modelredis.Announcement {
 		Contacts:         a.Contacts,
 		ModerationStatus: a.ModerationStatus,
 		SearchedStatus:   a.SearchedStatus,
-		OwnerID:          a.OwnerID,
+		UserID:           a.UserID,
 	}
 }
 
@@ -29,6 +29,6 @@ func FromRedisToAnnModel(a *modelredis.Announcement) *model.Announcement {
 		Contacts:         a.Contacts,
 		ModerationStatus: a.ModerationStatus,
 		SearchedStatus:   a.SearchedStatus,
-		OwnerID:          a.OwnerID,
+		UserID:           a.UserID,
 	}
 }

@@ -16,5 +16,5 @@ type Announcement struct {
 	ModerationStatus string
 	SearchedStatus   bool
 	Images           []Image
-	OwnerID          uuid.UUID
+	UserID           uuid.UUID
 }

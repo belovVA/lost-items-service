@@ -15,6 +15,7 @@ const (
 	ErrInvalidRole     = "invalid role in Request"
 	ErrUUIDParsing     = "invalid ID format"
 	ErrQueryParameters = "invalid query parameters"
+	ErrInvalidStatus   = "invalid moderation status"
 )
 
 // Roles
@@ -34,6 +35,7 @@ const (
 type Service interface {
 	AuthService
 	UserService
+	AnnouncementService
 }
 
 type Router struct {
@@ -63,12 +65,14 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 
 		api.Group(func(protected chi.Router) {
 			protected.Use(middleware.NewJWT(jwtSecret).Authenticate)
+
 			protected.Get("/user", router.infoOwnHandler)
 			protected.Patch("/user/{userId}", router.updateUserHandler)
 			protected.Delete("/user/{userId}", router.deleteUserHandler)
 			protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
 			protected.With(middleware.RequireRoles(AdminRole)).Post("/users", router.infoAllUsersHandler)
 
+			protected.Post("/announcement/create", router.createAnnHandler)
 		})
 	})
 	return r
@@ -121,4 +125,9 @@ func (r *Router) deleteUserHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) infoAllUsersHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewUserHandler(r.service)
 	h.UsersInfo(w, req)
+}
+
+func (r *Router) createAnnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAnnHandler(r.service)
+	h.CreateAnnouncement(w, req)
 }
