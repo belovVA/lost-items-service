@@ -15,13 +15,14 @@ import (
 type AnnouncementRepository struct {
 	Pg    pgdb.AnnPGRepository
 	Redis redis.AnnRedisRepository
-	group singleflight.Group
+	group *singleflight.Group
 }
 
 func NewRepository(pg pgxdb.DB, redisClient cache.RedisClient) *AnnouncementRepository {
 	return &AnnouncementRepository{
 		Pg:    pgdb.NewRepository(pg),
 		Redis: redis.NewRepository(redisClient),
+		group: &singleflight.Group{},
 	}
 }
 

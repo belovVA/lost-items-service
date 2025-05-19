@@ -30,12 +30,14 @@ const (
 	UserIDKey       = "userId"
 	ErrorKey        = "error"
 	ErrorServiceMsg = "service error"
+	AnnIDKey        = "annId"
 )
 
 type Service interface {
 	AuthService
 	UserService
 	AnnouncementService
+	ImageService
 }
 
 type Router struct {
@@ -44,16 +46,6 @@ type Router struct {
 
 func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux {
 	r := chi.NewRouter()
-	// Настройка CORS middleware
-
-	//r.Use(cors.Handler(cors.Options{
-	//	AllowedOrigins:   []string{"http://localhost:3000"}, // Разрешить запросы с фронтенда
-	//	AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-	//	AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-	//	ExposedHeaders:   []string{"Link"},
-	//	AllowCredentials: true,
-	//	MaxAge:           300, // Максимальное время кеширования preflight запросов
-	//}))
 
 	router := &Router{service: service}
 	r.Route("/api/v1", func(api chi.Router) {
@@ -73,6 +65,7 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 			protected.With(middleware.RequireRoles(AdminRole)).Post("/users", router.infoAllUsersHandler)
 
 			protected.Post("/announcement/create", router.createAnnHandler)
+			protected.Post("/announcement/images/add", router.AddimagesHandler)
 		})
 	})
 	return r
@@ -130,4 +123,9 @@ func (r *Router) infoAllUsersHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) createAnnHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewAnnHandler(r.service)
 	h.CreateAnnouncement(w, req)
+}
+
+func (r *Router) AddimagesHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewImageHandler(r.service)
+	h.AddImagesToAnnouncement(w, req)
 }

@@ -22,23 +22,28 @@ type AnnRepository interface {
 }
 
 type ImageRepository interface {
+	CreateImage(ctx context.Context, image *model.Image) (uuid.UUID, error)
+	GetImagesByAnnID(ctx context.Context, annID uuid.UUID) ([]*model.Image, error)
 }
 
 type Repository interface {
 	UserRepository
 	AnnRepository
+	ImageRepository
 }
 
 type Service struct {
 	*AuthService
 	*UserService
 	*AnnService
+	*ImageService
 }
 
 func NewService(repo Repository, jwtSecret string) *Service {
 	return &Service{
-		AuthService: NewAuthService(repo, jwtSecret),
-		UserService: NewUserService(repo),
-		AnnService:  NewAnnService(repo),
+		AuthService:  NewAuthService(repo, jwtSecret),
+		UserService:  NewUserService(repo),
+		AnnService:   NewAnnService(repo),
+		ImageService: NewImageService(repo, repo),
 	}
 }

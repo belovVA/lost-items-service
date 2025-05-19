@@ -5,6 +5,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+
 	"lost-items-service/internal/model"
 	"lost-items-service/internal/repository/user/pgdb/converter"
 )
@@ -27,7 +28,7 @@ func (r *userRepo) AddUser(ctx context.Context, user *model.User) (uuid.UUID, er
 
 	err = r.DB.QueryRow(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return uuid.Nil, model.ErrorBuildQuery
+		return uuid.Nil, model.ErrorScanRows
 	}
 
 	return id, nil

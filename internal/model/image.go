@@ -4,6 +4,11 @@ import "github.com/google/uuid"
 
 type Image struct {
 	ID             uuid.UUID
-	ImageBytes     []byte
+	Bytes          []byte
 	AnnouncementID uuid.UUID
+}
+
+type ImagesList struct {
+	AnnID  uuid.UUID
+	Images []*Image
 }

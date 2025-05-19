@@ -60,6 +60,9 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*model.Use
 		Where(sq.Eq{emailColumn: email}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
+	if err != nil {
+		return nil, model.ErrorBuildQuery
+	}
 	err = r.DB.QueryRow(ctx, query, args...).Scan(
 		&user.ID,
 		&user.Name,

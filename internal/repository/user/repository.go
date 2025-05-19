@@ -16,14 +16,31 @@ import (
 type UserRepository struct {
 	Pg    pgdb.UserPGRepository
 	Redis redis.UserRedisRepository
-	group singleflight.Group
+	group *singleflight.Group
 }
 
 func NewRepository(pg pgxdb.DB, redisClient cache.RedisClient) *UserRepository {
 	return &UserRepository{
 		Pg:    pgdb.NewRepository(pg),
 		Redis: redis.NewRepository(redisClient),
+		group: &singleflight.Group{},
 	}
+}
+
+func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
+	// 2.1) Сохраняем в БД
+	id, err := r.Pg.AddUser(ctx, user)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	user.ID = id
+
+	// 2.2) Кэшируем хешом
+	if _, err = r.Redis.CreateUser(ctx, user); err != nil {
+		// log.Warnf("redis HSET failed: %v", err)
+	}
+
+	return id, nil
 }
 
 // 1. GetUserByID: пробует Redis.GetUser, на промахе — Postgres + кеш.
@@ -57,22 +74,6 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.
 		return nil, err
 	}
 	return v.(*model.User), nil
-}
-
-func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
-	// 2.1) Сохраняем в БД
-	id, err := r.Pg.AddUser(ctx, user)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	user.ID = id
-
-	// 2.2) Кэшируем хешом
-	if _, err = r.Redis.CreateUser(ctx, user); err != nil {
-		// log.Warnf("redis HSET failed: %v", err)
-	}
-
-	return id, nil
 }
 
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
