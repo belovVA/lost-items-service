@@ -17,3 +17,11 @@ type Announcement struct {
 	SearchedStatus   bool      `db:"searched_status"`
 	UserID           uuid.UUID `db:"owner_id"`
 }
+
+type LimitsAnn struct {
+	FieldOrder string
+	Search     string
+	Limit      uint64
+	Offset     uint64
+	TimeRange  time.Time
+}

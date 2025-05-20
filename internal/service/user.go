@@ -33,7 +33,7 @@ func (s *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*model.Use
 	return s.userRepository.GetUserByID(ctx, id)
 }
 
-func (s *UserService) InfoUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error) {
+func (s *UserService) InfoUsers(ctx context.Context, limits *model.InfoSetting) ([]*model.User, error) {
 	return s.userRepository.GetUsers(ctx, limits)
 }
 

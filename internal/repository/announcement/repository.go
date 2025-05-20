@@ -2,6 +2,7 @@ package announcement
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"golang.org/x/sync/singleflight"
@@ -72,4 +73,31 @@ func (r *AnnouncementRepository) GetAnnByID(ctx context.Context, id uuid.UUID) (
 		return nil, err
 	}
 	return v.(*model.Announcement), nil
+}
+
+func (r *AnnouncementRepository) GetAnnsList(ctx context.Context, info *model.InfoSetting) ([]*model.Announcement, error) {
+	// 1.2) Cache-miss: дедупликация запросов к БД
+	groupKey := fmt.Sprintf("%s:%s:%d:%d:%s", info.OrderByField, info.Search, info.Page, info.Limit, info.TimeOrder)
+	v, err, _ := r.group.Do(groupKey, func() (interface{}, error) {
+		// 1.2.1) Читаем из Postgres
+		ann, err := r.Pg.GetListAnnouncement(ctx, info)
+		if err != nil {
+			return nil, err
+		}
+
+		//go func(u *model.Announcement) {
+		//	// 1.2.2) Кэшируем хешом
+		//	if _, err = r.Redis.CreateAnn(ctx, ann); err != nil {
+		//		// log.Warnf("redis HSET failed: %v", err)
+		//	}
+		//
+		//}(ann)
+
+		return ann, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return v.([]*model.Announcement), nil
 }

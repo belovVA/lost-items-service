@@ -15,6 +15,6 @@ type Announcement struct {
 	Contacts         string
 	ModerationStatus string
 	SearchedStatus   bool
-	Images           []Image
+	Images           []*Image
 	UserID           uuid.UUID
 }

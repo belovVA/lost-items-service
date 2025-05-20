@@ -26,7 +26,7 @@ func (r *ImageRepository) CreateImage(ctx context.Context, image *model.Image) (
 	return r.Pg.CreateImage(ctx, image)
 }
 
-func (r *ImageRepository) GetImagesByAnnID(ctx context.Context, annID uuid.UUID) ([]*model.Image, error) {
+func (r *ImageRepository) GetImagesByAnnouncementID(ctx context.Context, annID uuid.UUID) ([]*model.Image, error) {
 	v, err, _ := r.group.Do("images"+annID.String(), func() (interface{}, error) {
 		return r.Pg.GetImagesByAnnID(ctx, annID)
 	})

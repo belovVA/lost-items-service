@@ -54,6 +54,8 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 
 		api.Post("/register", http.HandlerFunc(router.registerHandler))
 		api.Post("/login", http.HandlerFunc(router.loginHandler))
+		api.Post("/announcement/list", router.getListAnnHandler)
+		api.Post("/announcement/info", router.getAnnHandler)
 
 		api.Group(func(protected chi.Router) {
 			protected.Use(middleware.NewJWT(jwtSecret).Authenticate)
@@ -66,6 +68,7 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 
 			protected.Post("/announcement/create", router.createAnnHandler)
 			protected.Post("/announcement/images/add", router.AddimagesHandler)
+
 		})
 	})
 	return r
@@ -128,4 +131,14 @@ func (r *Router) createAnnHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) AddimagesHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewImageHandler(r.service)
 	h.AddImagesToAnnouncement(w, req)
+}
+
+func (r *Router) getListAnnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAnnHandler(r.service)
+	h.AnnsInfo(w, req)
+}
+
+func (r *Router) getAnnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAnnHandler(r.service)
+	h.GetAnnouncement(w, req)
 }

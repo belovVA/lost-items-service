@@ -29,9 +29,9 @@ func FromModelRepoToUser(user *modelpg.User) *model.User {
 	}
 }
 
-func FromInfoUsersToLimitsUsers(info *model.InfoUsers) *modelpg.LimitsUsers {
+func FromInfoUsersToLimitsUsers(info *model.InfoSetting) *modelpg.LimitsUsers {
 	return &modelpg.LimitsUsers{
-		Role:   info.Role,
+		Role:   info.OrderByField,
 		Search: info.Search,
 		Limit:  uint64(info.Limit),
 		Offset: uint64((info.Page - 1) * info.Limit),

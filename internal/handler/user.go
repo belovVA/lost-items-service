@@ -18,7 +18,7 @@ import (
 type UserService interface {
 	GetOwnUser(ctx context.Context) (*model.User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
-	InfoUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error)
+	InfoUsers(ctx context.Context, limits *model.InfoSetting) ([]*model.User, error)
 	UpdateUser(ctx context.Context, user *model.User) error
 	DeleteUser(ctx context.Context, user *model.User) error
 }
@@ -70,7 +70,7 @@ func (h *UserHandlers) InfoUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandlers) UsersInfo(w http.ResponseWriter, r *http.Request) {
-	var reqQuery dto.InfoUsersRequestQuery
+	var reqQuery dto.InfoRequestQuery
 	var reqBody dto.InfoUsersRequestBody
 
 	logger := getLogger(r)
@@ -93,8 +93,8 @@ func (h *UserHandlers) UsersInfo(w http.ResponseWriter, r *http.Request) {
 
 	infoUsers := converter.FromInfoUsersRequestToInfoUsersModel(&reqBody, &reqQuery)
 
-	if infoUsers.Role != "" {
-		if err := validateRole(infoUsers.Role); err != nil {
+	if infoUsers.OrderByField != "" {
+		if err := validateRole(infoUsers.OrderByField); err != nil {
 			response.WriteError(w, ErrInvalidRole, http.StatusBadRequest)
 			logger.InfoContext(r.Context(), ErrInvalidRole, slog.String(ErrorKey, err.Error()))
 			return
@@ -107,7 +107,7 @@ func (h *UserHandlers) UsersInfo(w http.ResponseWriter, r *http.Request) {
 		logger.InfoContext(r.Context(), ErrBodyRequest, slog.String(ErrorKey, err.Error()))
 		response.WriteError(w, err.Error(), http.StatusInternalServerError)
 	}
-	logger.Info("success info users", slog.String("role order", infoUsers.Role), slog.String("search word", infoUsers.Search))
+	logger.Info("success info users", slog.String("role order", infoUsers.OrderByField), slog.String("search word", infoUsers.Search))
 	usersResp := make([]dto.UserShortResponse, 0, len(users))
 	for _, user := range users {
 		usersResp = append(usersResp, converter.FromUserToUserShortResponse(user))

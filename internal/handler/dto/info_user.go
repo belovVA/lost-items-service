@@ -16,7 +16,7 @@ type UserShortResponse struct {
 	Role  string `json:"role"`
 }
 
-type InfoUsersRequestQuery struct {
+type InfoRequestQuery struct {
 	Page  int `schema:"page"      validate:"omitempty"`
 	Limit int `schema:"limit"     validate:"omitempty"`
 }

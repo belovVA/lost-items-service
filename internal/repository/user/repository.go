@@ -106,12 +106,12 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	return v.(*model.User), nil
 }
 
-func (r *UserRepository) GetUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error) {
+func (r *UserRepository) GetUsers(ctx context.Context, limits *model.InfoSetting) ([]*model.User, error) {
 	if users, err := r.Redis.GetUsers(ctx, limits); err == nil {
 		return users, nil
 	}
 	// 3.2) Cache-miss: дедупликация по строковому ключу email
-	groupKey := fmt.Sprintf("%s:%s:%d:%d", limits.Role, limits.Search, limits.Page, limits.Limit)
+	groupKey := fmt.Sprintf("%s:%s:%d:%d", limits.OrderByField, limits.Search, limits.Page, limits.Limit)
 	v, err, _ := r.group.Do(groupKey, func() (interface{}, error) {
 		// 3.2.1) Читаем из Postgres
 		users, err := r.Pg.GetListUsers(ctx, limits)

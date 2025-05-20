@@ -32,3 +32,13 @@ func FromRepoToAnnModel(a *modelpg.Announcement) *model.Announcement {
 		UserID:           a.UserID,
 	}
 }
+
+func FromInfoModelToRepo(info *model.InfoSetting) *modelpg.LimitsAnn {
+	return &modelpg.LimitsAnn{
+		FieldOrder: info.OrderByField,
+		Search:     info.Search,
+		Limit:      uint64(info.Limit),
+		Offset:     uint64((info.Page - 1) * info.Limit),
+		TimeRange:  info.TimeOrder,
+	}
+}

@@ -43,5 +43,5 @@ func (s *ImageService) GetImages(ctx context.Context, ann *model.Announcement) (
 		return nil, err
 	}
 
-	return s.imageRepository.GetImagesByAnnID(ctx, ann.ID)
+	return s.imageRepository.GetImagesByAnnouncementID(ctx, ann.ID)
 }

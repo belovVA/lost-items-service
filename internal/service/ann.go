@@ -12,9 +12,10 @@ type AnnService struct {
 	imageRepository ImageRepository
 }
 
-func NewAnnService(repo AnnRepository) *AnnService {
+func NewAnnService(repoAn AnnRepository, repoImg ImageRepository) *AnnService {
 	return &AnnService{
-		annRepository: repo,
+		annRepository:   repoAn,
+		imageRepository: repoImg,
 	}
 }
 
@@ -23,5 +24,31 @@ func (s *AnnService) CreateAnnouncement(ctx context.Context, ann *model.Announce
 }
 
 func (s *AnnService) GetAnn(ctx context.Context, id uuid.UUID) (*model.Announcement, error) {
-	return s.annRepository.GetAnnByID(ctx, id)
+	ann, err := s.annRepository.GetAnnByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	ann.Images, err = s.imageRepository.GetImagesByAnnouncementID(ctx, ann.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ann, nil
+}
+
+func (s *AnnService) GetListAnn(ctx context.Context, i *model.InfoSetting) ([]*model.Announcement, error) {
+	anns, err := s.annRepository.GetAnnsList(ctx, i)
+	if err != nil {
+		return nil, err
+	}
+	//
+	for ind, _ := range anns {
+		anns[ind].Images, err = s.imageRepository.GetImagesByAnnouncementID(ctx, anns[ind].ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return anns, nil
 }

@@ -14,7 +14,7 @@ type UserRedisRepository interface {
 
 	GetUser(ctx context.Context, id uuid.UUID) (*model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
-	GetUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error)
+	GetUsers(ctx context.Context, limits *model.InfoSetting) ([]*model.User, error)
 
 	SetEmailIndex(ctx context.Context, email string, id uuid.UUID) error
 

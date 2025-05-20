@@ -24,7 +24,7 @@ type UserPGRepository interface {
 
 	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
-	GetListUsers(ctx context.Context, info *model.InfoUsers) ([]*model.User, error)
+	GetListUsers(ctx context.Context, info *model.InfoSetting) ([]*model.User, error)
 
 	UpdateUserByID(ctx context.Context, user *model.User) error
 

@@ -49,3 +49,11 @@ func ToResponseFromImagesModel(i *model.ImagesList) *dto.ListImageResponse {
 
 	return resp
 }
+
+func ToImageResponseFromModel(a *model.Image) dto.ImageResponse {
+	return dto.ImageResponse{
+		ID:    a.ID.String(),
+		Bytes: a.Bytes,
+		AnnId: a.AnnouncementID.String(),
+	}
+}

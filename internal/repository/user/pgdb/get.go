@@ -79,14 +79,14 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*model.Use
 	return converter.FromModelRepoToUser(&user), nil
 }
 
-func (r *userRepo) GetListUsers(ctx context.Context, info *model.InfoUsers) ([]*model.User, error) {
+func (r *userRepo) GetListUsers(ctx context.Context, info *model.InfoSetting) ([]*model.User, error) {
 	limits := converter.FromInfoUsersToLimitsUsers(info)
 	users := make([]*model.User, 0, info.Limit)
 
 	//// -------- COUNT QUERY --------
 	//countReq := sq.Select("COUNT(*)").From(usersTable).PlaceholderFormat(sq.Dollar)
-	//if limits.Role != "" {
-	//	countReq = countReq.Where(sq.Eq{roleColumn: limits.Role})
+	//if limits.OrderByField != "" {
+	//	countReq = countReq.Where(sq.Eq{roleColumn: limits.OrderByField})
 	//}
 	//
 	//countQuery, countArgs, err := countReq.ToSql()
@@ -110,8 +110,7 @@ func (r *userRepo) GetListUsers(ctx context.Context, info *model.InfoUsers) ([]*
 			roleColumn,
 		).
 		From(usersTable).
-		PlaceholderFormat(sq.Dollar).
-		OrderBy(userIDColumn)
+		PlaceholderFormat(sq.Dollar)
 	if limits.Role != "" {
 		req = req.Where(sq.Eq{roleColumn: limits.Role})
 	}

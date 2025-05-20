@@ -50,10 +50,10 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*model.Use
 	return r.GetUser(ctx, id)
 }
 
-func (r *userRepo) GetUsers(ctx context.Context, limits *model.InfoUsers) ([]*model.User, error) {
+func (r *userRepo) GetUsers(ctx context.Context, limits *model.InfoSetting) ([]*model.User, error) {
 	cacheKey := fmt.Sprintf(
 		"users:role:%s:page:%d:limit:%d",
-		limits.Role, limits.Page, limits.Limit,
+		limits.OrderByField, limits.Page, limits.Limit,
 	)
 	// 3) Попытка взять из Redis
 	if raw, err := r.cl.Get(ctx, cacheKey); err == nil {

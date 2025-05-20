@@ -28,3 +28,22 @@ func ToIDResponse(id uuid.UUID) dto.IDResponse {
 	return dto.IDResponse{
 		ID: id.String()}
 }
+
+func ToAnnouncementResponseFromModel(a *model.Announcement) dto.AnnouncementResponse {
+	imgs := make([]dto.ImageResponse, 0, len(a.Images))
+	for _, img := range a.Images {
+		imgs = append(imgs, ToImageResponseFromModel(img))
+	}
+	return dto.AnnouncementResponse{
+		ID:               a.ID.String(),
+		Title:            a.Title,
+		Description:      a.Description,
+		Address:          a.Address,
+		Date:             a.Date,
+		Images:           imgs,
+		Contacts:         a.Contacts,
+		ModerationStatus: a.ModerationStatus,
+		SearchedStatus:   a.SearchedStatus,
+		UserID:           a.UserID.String(),
+	}
+}
