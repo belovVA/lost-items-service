@@ -170,7 +170,7 @@ func (h *UserHandlers) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := converter.ToUUIDFromStringID(userIDStr)
 	if err != nil {
-		logger.InfoContext(r.Context(), "UpdateUser"+ErrUUIDParsing, slog.String(ErrorKey, err.Error()))
+		logger.InfoContext(r.Context(), "DeleteUser"+ErrUUIDParsing, slog.String(ErrorKey, err.Error()))
 
 		response.WriteError(w, ErrUUIDParsing, http.StatusBadRequest)
 		return
@@ -187,5 +187,5 @@ func (h *UserHandlers) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Info("DeleteUser success", slog.String(UserIDKey, userID.String()))
-	response.Success(w, http.StatusNoContent)
+	response.Success(w, http.StatusOK)
 }

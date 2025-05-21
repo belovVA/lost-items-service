@@ -127,3 +127,54 @@ func (r *AnnouncementRepository) GetUserAnns(ctx context.Context, userID uuid.UU
 	}
 	return v.([]*model.Announcement), nil
 }
+
+func (r *AnnouncementRepository) UpdateAnnouncement(ctx context.Context, ann *model.Announcement) error {
+	// 1.2) Cache-miss: дедупликация запросов к БД
+	_, err, _ := r.group.Do("update"+ann.ID.String(), func() (interface{}, error) {
+
+		// 1.2.1) Читаем из Postgres
+		if err := r.Pg.UpdateFields(ctx, ann); err != nil {
+			return nil, err
+		}
+
+		//go func(u *model.Announcement) {
+		//	// 1.2.2) Кэшируем хешом
+		//	if err := r.Redis.Delete(ctx, ann.ID); err != nil {
+		//		// log.Warnf("redis HSET failed: %v", err)
+		//	}
+		//
+		//	if _, err := r.Redis.CreateAnn(ctx, ann); err != nil {
+		//		// log.Warnf("redis HSET failed: %v", err)
+		//	}
+		//
+		//}(ann)
+
+		return nil, nil
+	})
+
+	return err
+}
+
+func (r *AnnouncementRepository) DeleteAnnByID(ctx context.Context, id uuid.UUID) error {
+	// 1.2) Cache-miss: дедупликация запросов к БД
+	_, err, _ := r.group.Do("delete"+id.String(), func() (interface{}, error) {
+
+		// 1.2.1) Читаем из Postgres
+		err := r.Pg.DeleteAnn(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		go func(id uuid.UUID) {
+			// 1.2.2) Кэшируем хешом
+			if err = r.Redis.Delete(ctx, id); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
+			}
+
+		}(id)
+
+		return nil, nil
+	})
+
+	return err
+}

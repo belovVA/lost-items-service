@@ -21,6 +21,8 @@ type AnnouncementService interface {
 	GetAnn(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
 	GetListAnn(ctx context.Context, i *model.InfoSetting) ([]*model.Announcement, error)
 	GetListAnnByUser(ctx context.Context, i *model.InfoSetting) ([]*model.Announcement, error)
+	UpdateAnn(ctx context.Context, a *model.Announcement) error
+	DeleteAnn(ctx context.Context, id uuid.UUID) error
 }
 
 type AnnHandlers struct {
@@ -64,7 +66,7 @@ func (h *AnnHandlers) CreateAnnouncement(w http.ResponseWriter, r *http.Request)
 	}
 	annID, err := h.Service.CreateAnnouncement(r.Context(), a)
 	if err != nil {
-		response.WriteError(w, err.Error(), http.StatusInternalServerError)
+		response.WriteError(w, err.Error(), http.StatusBadRequest)
 		logger.Info("error create Ann", slog.String(ErrorKey, err.Error()), slog.String("userID", a.UserID.String()))
 		return
 	}
@@ -75,7 +77,7 @@ func (h *AnnHandlers) CreateAnnouncement(w http.ResponseWriter, r *http.Request)
 
 func checkStatus(status string) error {
 	switch status {
-	case "in_progress", "canceled", "accepted":
+	case "watching", "canceled", "accepted":
 		return nil
 	}
 	return fmt.Errorf("invalid moderation status")
@@ -118,7 +120,7 @@ func (h *AnnHandlers) AnnsInfo(w http.ResponseWriter, r *http.Request) {
 	anns, err := h.Service.GetListAnn(r.Context(), infoAnns)
 	if err != nil {
 		logger.InfoContext(r.Context(), "AnnsInfo service", slog.String(ErrorKey, err.Error()))
-		response.WriteError(w, err.Error(), http.StatusInternalServerError)
+		response.WriteError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -203,7 +205,7 @@ func (h *AnnHandlers) GetUserAnnouncements(w http.ResponseWriter, r *http.Reques
 	anns, err := h.Service.GetListAnnByUser(r.Context(), infoAnns)
 	if err != nil {
 		logger.InfoContext(r.Context(), "AnnsInfo service", slog.String(ErrorKey, err.Error()))
-		response.WriteError(w, err.Error(), http.StatusInternalServerError)
+		response.WriteError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -214,4 +216,73 @@ func (h *AnnHandlers) GetUserAnnouncements(w http.ResponseWriter, r *http.Reques
 	}
 
 	response.SuccessJSON(w, annsResp, http.StatusOK)
+}
+
+func (h *AnnHandlers) UpdateAnnouncement(w http.ResponseWriter, r *http.Request) {
+	var req dto.UpdateAnnouncementRequest
+
+	logger := getLogger(r)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteError(w, ErrBodyRequest, http.StatusBadRequest)
+		logger.Info("UpdateAnnouncement "+ErrBodyRequest, slog.String(ErrorKey, err.Error()))
+		return
+	}
+
+	v := getValidator(r)
+	if err := v.Struct(req); err != nil {
+		response.WriteError(w, ErrRequestFields, http.StatusBadRequest)
+		logger.Info("UpdateAnnouncement "+ErrRequestFields, slog.String(ErrorKey, err.Error()))
+		return
+	}
+
+	a, err := converter.ToAnnouncementModelFromUpdateRequest(&req)
+	if err != nil {
+		logger.InfoContext(r.Context(), "UpdateAnnouncement "+ErrUUIDParsing, slog.String(ErrorKey, err.Error()))
+		response.WriteError(w, ErrUUIDParsing, http.StatusBadRequest)
+		return
+	}
+
+	if err = checkStatus(a.ModerationStatus); err != nil {
+		logger.InfoContext(r.Context(), "UpdateAnnouncement "+ErrInvalidStatus, slog.String(ErrorKey, err.Error()))
+		response.WriteError(w, ErrInvalidStatus, http.StatusBadRequest)
+		return
+	}
+
+	if err = h.Service.UpdateAnn(r.Context(), a); err != nil {
+		response.WriteError(w, err.Error(), http.StatusBadRequest)
+		logger.Info("error create Ann", slog.String(ErrorKey, err.Error()), slog.String("userID", a.UserID.String()))
+		return
+	}
+
+	logger.InfoContext(r.Context(), "success update announcement", slog.String("ID", a.ID.String()))
+	response.Success(w, http.StatusCreated)
+}
+
+func (h *AnnHandlers) DeleteAnn(w http.ResponseWriter, r *http.Request) {
+	var req dto.IDRequest
+	logger := getLogger(r)
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteError(w, ErrBodyRequest, http.StatusBadRequest)
+		logger.Info("DeleteAnn "+ErrBodyRequest, slog.String(ErrorKey, err.Error()))
+		return
+	}
+
+	annID, err := converter.ToUUIDFromStringID(req.ID)
+	if err != nil {
+		logger.InfoContext(r.Context(), "DeleteAnn"+ErrUUIDParsing, slog.String(ErrorKey, err.Error()))
+
+		response.WriteError(w, ErrUUIDParsing, http.StatusBadRequest)
+		return
+	}
+
+	err = h.Service.DeleteAnn(r.Context(), annID)
+	if err != nil {
+		response.WriteError(w, err.Error(), http.StatusInternalServerError)
+		logger.Info("DeleteAnn", slog.String(ErrorKey, err.Error()))
+		return
+	}
+
+	logger.Info("DeleteAnn success", slog.String(AnnIDKey, annID.String()))
+	response.Success(w, http.StatusOK)
 }

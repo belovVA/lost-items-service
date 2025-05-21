@@ -75,3 +75,15 @@ func (s *AnnService) GetListAnnByUser(ctx context.Context, i *model.InfoSetting)
 
 	return anns, nil
 }
+
+func (s *AnnService) UpdateAnn(ctx context.Context, a *model.Announcement) error {
+	if _, err := s.annRepository.GetAnnByID(ctx, a.ID); err != nil {
+		return err
+	}
+
+	return s.annRepository.UpdateAnnouncement(ctx, a)
+}
+
+func (s *AnnService) DeleteAnn(ctx context.Context, id uuid.UUID) error {
+	return s.annRepository.DeleteAnnByID(ctx, id)
+}

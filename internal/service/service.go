@@ -21,6 +21,8 @@ type AnnRepository interface {
 	GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
 	GetAnnsList(ctx context.Context, info *model.InfoSetting) ([]*model.Announcement, error)
 	GetUserAnns(ctx context.Context, userID uuid.UUID, info *model.InfoSetting) ([]*model.Announcement, error)
+	UpdateAnnouncement(ctx context.Context, ann *model.Announcement) error
+	DeleteAnnByID(ctx context.Context, id uuid.UUID) error
 }
 
 type ImageRepository interface {

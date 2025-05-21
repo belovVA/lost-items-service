@@ -47,3 +47,21 @@ func ToAnnouncementResponseFromModel(a *model.Announcement) dto.AnnouncementResp
 		UserID:           a.UserID.String(),
 	}
 }
+
+func ToAnnouncementModelFromUpdateRequest(a *dto.UpdateAnnouncementRequest) (*model.Announcement, error) {
+	id, err := uuid.Parse(a.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Announcement{
+		ID:               id,
+		Title:            a.Title,
+		Description:      a.Description,
+		Address:          a.Address,
+		Date:             a.Date,
+		Contacts:         a.Contacts,
+		ModerationStatus: a.ModerationStatus,
+		SearchedStatus:   a.SearchedStatus,
+	}, nil
+}

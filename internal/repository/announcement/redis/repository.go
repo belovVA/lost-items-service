@@ -11,6 +11,7 @@ import (
 type AnnRedisRepository interface {
 	CreateAnn(ctx context.Context, ann *model.Announcement) (uuid.UUID, error)
 	GetAnn(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
 type annRepo struct {

@@ -69,6 +69,8 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 			protected.Post("/announcement/user", router.getListUserAnnHandler)
 			protected.Post("/announcement/create", router.createAnnHandler)
 			protected.Post("/announcement/images/add", router.AddimagesHandler)
+			protected.Patch("/announcement", router.updateAnnHandler)
+			protected.Delete("/announcement", router.deleteAnnHandler)
 
 		})
 	})
@@ -147,4 +149,14 @@ func (r *Router) getAnnHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) getListUserAnnHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewAnnHandler(r.service)
 	h.GetUserAnnouncements(w, req)
+}
+
+func (r *Router) updateAnnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAnnHandler(r.service)
+	h.UpdateAnnouncement(w, req)
+}
+
+func (r *Router) deleteAnnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAnnHandler(r.service)
+	h.DeleteAnn(w, req)
 }

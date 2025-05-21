@@ -26,6 +26,9 @@ type AnnPGRepository interface {
 	GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
 	GetListAnnouncement(ctx context.Context, info *model.InfoSetting) ([]*model.Announcement, error)
 	GetAnnsByUserID(ctx context.Context, userID uuid.UUID, info *model.InfoSetting) ([]*model.Announcement, error)
+	UpdateFields(ctx context.Context, ann *model.Announcement) error
+	UpdateModerationStatus(ctx context.Context, ann *model.Announcement) error
+	DeleteAnn(ctx context.Context, id uuid.UUID) error
 }
 
 type annRepo struct {
