@@ -25,6 +25,7 @@ type AnnPGRepository interface {
 	AddAnn(ctx context.Context, ann *model.Announcement) (uuid.UUID, error)
 	GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
 	GetListAnnouncement(ctx context.Context, info *model.InfoSetting) ([]*model.Announcement, error)
+	GetAnnsByUserID(ctx context.Context, userID uuid.UUID, info *model.InfoSetting) ([]*model.Announcement, error)
 }
 
 type annRepo struct {

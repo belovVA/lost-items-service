@@ -101,3 +101,29 @@ func (r *AnnouncementRepository) GetAnnsList(ctx context.Context, info *model.In
 	}
 	return v.([]*model.Announcement), nil
 }
+
+func (r *AnnouncementRepository) GetUserAnns(ctx context.Context, userID uuid.UUID, info *model.InfoSetting) ([]*model.Announcement, error) {
+	groupKey := fmt.Sprintf("%s:%s:%d:%d:%s", info.OrderByField, info.Search, info.Page, info.Limit, info.TimeOrder)
+	v, err, _ := r.group.Do(groupKey, func() (interface{}, error) {
+		// 1.2.1) Читаем из Postgres
+		ann, err := r.Pg.GetListAnnouncement(ctx, info)
+		if err != nil {
+			return nil, err
+		}
+
+		//go func(u *model.Announcement) {
+		//	// 1.2.2) Кэшируем хешом
+		//	if _, err = r.Redis.CreateAnn(ctx, ann); err != nil {
+		//		// log.Warnf("redis HSET failed: %v", err)
+		//	}
+		//
+		//}(ann)
+
+		return ann, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return v.([]*model.Announcement), nil
+}

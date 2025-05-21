@@ -66,6 +66,7 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 			protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
 			protected.With(middleware.RequireRoles(AdminRole)).Post("/users", router.infoAllUsersHandler)
 
+			protected.Post("/announcement/user", router.getListUserAnnHandler)
 			protected.Post("/announcement/create", router.createAnnHandler)
 			protected.Post("/announcement/images/add", router.AddimagesHandler)
 
@@ -141,4 +142,9 @@ func (r *Router) getListAnnHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) getAnnHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewAnnHandler(r.service)
 	h.GetAnnouncement(w, req)
+}
+
+func (r *Router) getListUserAnnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAnnHandler(r.service)
+	h.GetUserAnnouncements(w, req)
 }

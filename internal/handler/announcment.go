@@ -20,6 +20,7 @@ type AnnouncementService interface {
 	CreateAnnouncement(ctx context.Context, ann *model.Announcement) (uuid.UUID, error)
 	GetAnn(ctx context.Context, id uuid.UUID) (*model.Announcement, error)
 	GetListAnn(ctx context.Context, i *model.InfoSetting) ([]*model.Announcement, error)
+	GetListAnnByUser(ctx context.Context, i *model.InfoSetting) ([]*model.Announcement, error)
 }
 
 type AnnHandlers struct {
@@ -163,4 +164,54 @@ func (h *AnnHandlers) GetAnnouncement(w http.ResponseWriter, r *http.Request) {
 
 	response.SuccessJSON(w, converter.ToAnnouncementResponseFromModel(ann), http.StatusCreated)
 
+}
+
+func (h *AnnHandlers) GetUserAnnouncements(w http.ResponseWriter, r *http.Request) {
+	var reqQuery dto.InfoRequestQuery
+	var reqBody dto.InfoAnnRequestBody
+
+	logger := getLogger(r)
+
+	decoder := schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(false)
+
+	if err := decoder.Decode(&reqQuery, r.URL.Query()); err != nil {
+		response.WriteError(w, ErrQueryParameters, http.StatusBadRequest)
+		logger.InfoContext(r.Context(), "AnnsInfo "+ErrQueryParameters, slog.String(ErrorKey, err.Error()))
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		log.Println(r.Body)
+		response.WriteError(w, ErrBodyRequest, http.StatusBadRequest)
+		logger.InfoContext(r.Context(), "AnnsInfo "+ErrBodyRequest, slog.String(ErrorKey, err.Error()))
+
+		return
+	}
+
+	infoAnns := converter.FromInfoAnnRequestToModel(&reqBody, &reqQuery)
+
+	if infoAnns.OrderByField != "" {
+		if infoAnns.OrderByField != "true" && infoAnns.OrderByField != "false" {
+			response.WriteError(w, "invalid status", http.StatusBadRequest)
+			logger.InfoContext(r.Context(), "invalid searched status", slog.String(ErrorKey, infoAnns.OrderByField))
+			return
+		}
+	}
+
+	//
+	anns, err := h.Service.GetListAnnByUser(r.Context(), infoAnns)
+	if err != nil {
+		logger.InfoContext(r.Context(), "AnnsInfo service", slog.String(ErrorKey, err.Error()))
+		response.WriteError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	logger.Info("success info user anns", slog.String("role order", infoAnns.OrderByField), slog.String("search word", infoAnns.Search))
+	annsResp := make([]dto.AnnouncementResponse, 0, len(anns))
+	for _, a := range anns {
+		annsResp = append(annsResp, converter.ToAnnouncementResponseFromModel(a))
+	}
+
+	response.SuccessJSON(w, annsResp, http.StatusOK)
 }
