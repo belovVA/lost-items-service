@@ -19,9 +19,10 @@ type Announcement struct {
 }
 
 type LimitsAnn struct {
-	FieldOrder string
-	Search     string
-	Limit      uint64
-	Offset     uint64
-	TimeRange  time.Time
+	FieldOrder  string
+	Search      string
+	Limit       uint64
+	Offset      uint64
+	TimeRange   time.Time
+	ModerStatus string
 }

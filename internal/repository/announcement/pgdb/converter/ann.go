@@ -35,10 +35,11 @@ func FromRepoToAnnModel(a *modelpg.Announcement) *model.Announcement {
 
 func FromInfoModelToRepo(info *model.InfoSetting) *modelpg.LimitsAnn {
 	return &modelpg.LimitsAnn{
-		FieldOrder: info.OrderByField,
-		Search:     info.Search,
-		Limit:      uint64(info.Limit),
-		Offset:     uint64((info.Page - 1) * info.Limit),
-		TimeRange:  info.TimeOrder,
+		FieldOrder:  info.OrderByField,
+		Search:      info.Search,
+		Limit:       uint64(info.Limit),
+		Offset:      uint64((info.Page - 1) * info.Limit),
+		TimeRange:   info.TimeOrder,
+		ModerStatus: info.ModerStatus,
 	}
 }

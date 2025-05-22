@@ -8,4 +8,5 @@ type InfoSetting struct {
 	Page         int
 	Limit        int
 	TimeOrder    time.Time
+	ModerStatus  string
 }

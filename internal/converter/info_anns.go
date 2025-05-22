@@ -12,6 +12,7 @@ func FromInfoAnnRequestToModel(body *dto.InfoAnnRequestBody, query *dto.InfoRequ
 		Page:         query.Page,
 		Limit:        query.Limit,
 		TimeOrder:    body.TimeRange,
+		ModerStatus:  body.ModerStatus,
 	}
 	setDefaultsPagination(&InfoModel)
 	return &InfoModel

@@ -10,7 +10,7 @@ type CreateAnnouncementRequest struct {
 	Date             time.Time `json:"date" validate:"required"`
 	Contacts         string    `json:"contacts" validate:"required"`
 	ModerationStatus string    `json:"moderation_status" validate:"required"`
-	SearchedStatus   bool      `json:"searched_status" validate:"required"`
+	SearchedStatus   bool      `json:"searched_status"`
 	UserID           string    `json:"user_id" validate:"required"`
 }
 
@@ -22,6 +22,7 @@ type InfoAnnRequestBody struct {
 	SearchedStatus string    `json:"searched_status,omitempty"`
 	Search         string    `json:"search,omitempty"`
 	TimeRange      time.Time `json:"time_range,omitempty"`
+	ModerStatus    string    `json:"moderation_status,omitempty"`
 }
 
 type AnnouncementResponse struct {

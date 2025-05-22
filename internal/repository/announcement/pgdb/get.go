@@ -69,6 +69,9 @@ func (r *annRepo) GetListAnnouncement(ctx context.Context, info *model.InfoSetti
 		).
 		From(annTable).
 		PlaceholderFormat(sq.Dollar)
+	if limits.ModerStatus != "" {
+		req = req.Where(sq.Eq{annModerationStatusColumn: limits.ModerStatus})
+	}
 	if limits.FieldOrder != "" {
 		boolVal, err := strconv.ParseBool(limits.FieldOrder)
 		if err != nil {
