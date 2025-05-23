@@ -22,6 +22,7 @@ type AnnouncementService interface {
 	GetListAnn(ctx context.Context, i *model.InfoSetting) ([]*model.Announcement, error)
 	GetListAnnByUser(ctx context.Context, i *model.InfoSetting) ([]*model.Announcement, error)
 	UpdateAnn(ctx context.Context, a *model.Announcement) error
+	UpdateMoserStatusAnn(ctx context.Context, a *model.Announcement) error
 	DeleteAnn(ctx context.Context, id uuid.UUID) error
 }
 
@@ -250,7 +251,7 @@ func (h *AnnHandlers) UpdateAnnouncement(w http.ResponseWriter, r *http.Request)
 
 	if err = h.Service.UpdateAnn(r.Context(), a); err != nil {
 		response.WriteError(w, err.Error(), http.StatusBadRequest)
-		logger.Info("error create Ann", slog.String(ErrorKey, err.Error()), slog.String("userID", a.UserID.String()))
+		logger.Info("error update Ann", slog.String(ErrorKey, err.Error()), slog.String("userID", a.UserID.String()))
 		return
 	}
 
@@ -285,4 +286,44 @@ func (h *AnnHandlers) DeleteAnn(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("DeleteAnn success", slog.String(AnnIDKey, annID.String()))
 	response.Success(w, http.StatusOK)
+}
+
+func (h *AnnHandlers) UpdateModerationStatusAnnouncement(w http.ResponseWriter, r *http.Request) {
+	var req dto.UpdateModerationStatusRequest
+
+	logger := getLogger(r)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.WriteError(w, ErrBodyRequest, http.StatusBadRequest)
+		logger.Info("UpdateModerationAnnouncement "+ErrBodyRequest, slog.String(ErrorKey, err.Error()))
+		return
+	}
+
+	v := getValidator(r)
+	if err := v.Struct(req); err != nil {
+		response.WriteError(w, ErrRequestFields, http.StatusBadRequest)
+		logger.Info("UpdateModerationAnnouncement "+ErrRequestFields, slog.String(ErrorKey, err.Error()))
+		return
+	}
+
+	a, err := converter.ToAnnouncementModelFromUpdateMoserRequest(&req)
+	if err != nil {
+		logger.InfoContext(r.Context(), "UpdateModerationAnnouncement "+ErrUUIDParsing, slog.String(ErrorKey, err.Error()))
+		response.WriteError(w, ErrUUIDParsing, http.StatusBadRequest)
+		return
+	}
+
+	if err = checkStatus(a.ModerationStatus); err != nil {
+		logger.InfoContext(r.Context(), "UpdateModerationAnnouncement "+ErrInvalidStatus, slog.String(ErrorKey, err.Error()))
+		response.WriteError(w, ErrInvalidStatus, http.StatusBadRequest)
+		return
+	}
+
+	if err = h.Service.UpdateMoserStatusAnn(r.Context(), a); err != nil {
+		response.WriteError(w, err.Error(), http.StatusBadRequest)
+		logger.Info("error update MStatus Ann", slog.String(ErrorKey, err.Error()), slog.String("userID", a.UserID.String()))
+		return
+	}
+
+	logger.InfoContext(r.Context(), "success update announcement", slog.String("ID", a.ID.String()))
+	response.Success(w, http.StatusCreated)
 }

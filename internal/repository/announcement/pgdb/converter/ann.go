@@ -39,7 +39,7 @@ func FromInfoModelToRepo(info *model.InfoSetting) *modelpg.LimitsAnn {
 		Search:      info.Search,
 		Limit:       uint64(info.Limit),
 		Offset:      uint64((info.Page - 1) * info.Limit),
-		TimeRange:   info.TimeOrder,
+		TimeRange:   &info.TimeOrder,
 		ModerStatus: info.ModerStatus,
 	}
 }

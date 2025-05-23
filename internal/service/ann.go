@@ -87,3 +87,11 @@ func (s *AnnService) UpdateAnn(ctx context.Context, a *model.Announcement) error
 func (s *AnnService) DeleteAnn(ctx context.Context, id uuid.UUID) error {
 	return s.annRepository.DeleteAnnByID(ctx, id)
 }
+
+func (s *AnnService) UpdateMoserStatusAnn(ctx context.Context, a *model.Announcement) error {
+	if _, err := s.annRepository.GetAnnByID(ctx, a.ID); err != nil {
+		return err
+	}
+
+	return s.annRepository.UpdateModerationStatusAnnouncement(ctx, a)
+}

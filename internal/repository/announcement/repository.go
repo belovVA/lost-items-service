@@ -178,3 +178,30 @@ func (r *AnnouncementRepository) DeleteAnnByID(ctx context.Context, id uuid.UUID
 
 	return err
 }
+
+func (r *AnnouncementRepository) UpdateModerationStatusAnnouncement(ctx context.Context, ann *model.Announcement) error {
+	// 1.2) Cache-miss: дедупликация запросов к БД
+	_, err, _ := r.group.Do("update"+ann.ID.String(), func() (interface{}, error) {
+
+		// 1.2.1) Читаем из Postgres
+		if err := r.Pg.UpdateModerationStatus(ctx, ann); err != nil {
+			return nil, err
+		}
+
+		//go func(u *model.Announcement) {
+		//	// 1.2.2) Кэшируем хешом
+		//	if err := r.Redis.Delete(ctx, ann.ID); err != nil {
+		//		// log.Warnf("redis HSET failed: %v", err)
+		//	}
+		//
+		//	if _, err := r.Redis.CreateAnn(ctx, ann); err != nil {
+		//		// log.Warnf("redis HSET failed: %v", err)
+		//	}
+		//
+		//}(ann)
+
+		return nil, nil
+	})
+
+	return err
+}

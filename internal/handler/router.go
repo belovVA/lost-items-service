@@ -52,8 +52,8 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 		api.Use(middleware.NewValidator().Middleware)
 		api.Use(middleware.ContextLoggerMiddleware(logger))
 
-		api.Post("/register", http.HandlerFunc(router.registerHandler))
-		api.Post("/login", http.HandlerFunc(router.loginHandler))
+		api.Post("/register", router.registerHandler)
+		api.Post("/login", router.loginHandler)
 		api.Post("/announcement/list", router.getListAnnHandler)
 		api.Post("/announcement/info", router.getAnnHandler)
 
@@ -63,8 +63,11 @@ func NewRouter(service Service, jwtSecret string, logger *slog.Logger) *chi.Mux 
 			protected.Get("/user", router.infoOwnHandler)
 			protected.Patch("/user/{userId}", router.updateUserHandler)
 			protected.Delete("/user/{userId}", router.deleteUserHandler)
+
 			protected.With(middleware.RequireRoles(AdminRole)).Get("/user/{userId}", router.infoUserHandler)
 			protected.With(middleware.RequireRoles(AdminRole)).Post("/users", router.infoAllUsersHandler)
+
+			protected.With(middleware.RequireRoles(ModeratorRole)).Patch("/announcement/status", router.updateStatusAnnHandler)
 
 			protected.Post("/announcement/user", router.getListUserAnnHandler)
 			protected.Post("/announcement/create", router.createAnnHandler)
@@ -159,4 +162,9 @@ func (r *Router) updateAnnHandler(w http.ResponseWriter, req *http.Request) {
 func (r *Router) deleteAnnHandler(w http.ResponseWriter, req *http.Request) {
 	h := NewAnnHandler(r.service)
 	h.DeleteAnn(w, req)
+}
+
+func (r *Router) updateStatusAnnHandler(w http.ResponseWriter, req *http.Request) {
+	h := NewAnnHandler(r.service)
+	h.UpdateModerationStatusAnnouncement(w, req)
 }

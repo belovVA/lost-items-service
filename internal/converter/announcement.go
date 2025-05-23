@@ -65,3 +65,15 @@ func ToAnnouncementModelFromUpdateRequest(a *dto.UpdateAnnouncementRequest) (*mo
 		SearchedStatus:   a.SearchedStatus,
 	}, nil
 }
+
+func ToAnnouncementModelFromUpdateMoserRequest(a *dto.UpdateModerationStatusRequest) (*model.Announcement, error) {
+	id, err := uuid.Parse(a.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Announcement{
+		ID:               id,
+		ModerationStatus: a.ModerationStatus,
+	}, nil
+}

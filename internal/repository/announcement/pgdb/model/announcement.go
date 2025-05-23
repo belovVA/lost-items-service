@@ -23,6 +23,6 @@ type LimitsAnn struct {
 	Search      string
 	Limit       uint64
 	Offset      uint64
-	TimeRange   time.Time
+	TimeRange   *time.Time
 	ModerStatus string
 }

@@ -84,6 +84,9 @@ func (r *annRepo) GetListAnnouncement(ctx context.Context, info *model.InfoSetti
 		search_vector @@ plainto_tsquery('russian', unaccent($1))
 	`, limits.Search)
 	}
+	if limits.TimeRange != nil {
+		req = req.Where(sq.GtOrEq{annDateColumn: limits.TimeRange})
+	}
 
 	req = req.Limit(limits.Limit).Offset(limits.Offset)
 

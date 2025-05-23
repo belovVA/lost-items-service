@@ -53,3 +53,8 @@ type UpdateAnnouncementRequest struct {
 	SearchedStatus   bool      `json:"searched_status"  `
 	UserID           string    `json:"user_id" `
 }
+
+type UpdateModerationStatusRequest struct {
+	ID               string `json:"id" validate:"required"`
+	ModerationStatus string `json:"moderation_status"  `
+}
