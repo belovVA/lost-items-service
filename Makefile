@@ -2,7 +2,7 @@ run:	build
 	./main
 
 build:
-	go build cmd/lost-item-service/main.go
+	go build cmd/lost-items-service/main.go
 
 # Убираем моки из покрытия
 PKGS=$(shell go list ./... | grep -vE '/(test)')

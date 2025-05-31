@@ -1,15 +1,15 @@
 
 services:
-#  lost-items-service:
-#    build: .
-#    container_name: lost-items-service
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#    networks:
-#      - internal
+  lost-items-service:
+    build: .
+    container_name: lost-items-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
 
   db:
     image: postgres:13

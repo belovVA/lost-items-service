@@ -11,14 +11,13 @@ import (
 
 func (r *annRepo) UpdateFields(ctx context.Context, ann *model.Announcement) error {
 	a := converter.FromAnnModelToRepo(ann)
-
 	q := sq.
 		Update(annTable).
 		Set(annTitleColumn, a.Title).
 		Set(annDescColumn, a.Description).
 		Set(annAddressColumn, a.Address).
 		Set(annDateColumn, a.Date).
-		//Set(annContactsColumn, a.Contacts).
+		Set(annContactsColumn, a.Contacts).
 		Set(annSearchedStatusColumn, a.SearchedStatus)
 	if a.ModerationStatus != "" {
 		q = q.Set(annModerationStatusColumn, a.ModerationStatus)

@@ -26,5 +26,5 @@ func (r *annRepo) GetAnn(ctx context.Context, id uuid.UUID) (*model.Announcement
 		return nil, err
 	}
 
-	return converter.FromRedisToAnnModel(&ann), nil
+	return converter.FromRedisToAnnModel(&ann)
 }

@@ -12,13 +12,12 @@ import (
 func (r *annRepo) CreateAnn(ctx context.Context, ann *model.Announcement) (uuid.UUID, error) {
 	a := converter.FromAnnModelToRedis(ann)
 
-	idStr := a.ID.String()
+	idStr := a.ID
 
 	if err := r.cl.HashSet(ctx, idStr, a); err != nil {
 		return uuid.Nil, err
 	}
-
 	_ = r.cl.Expire(ctx, idStr, 10*time.Minute)
 
-	return a.ID, nil
+	return uuid.Parse(idStr)
 }

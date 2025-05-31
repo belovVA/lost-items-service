@@ -3,6 +3,7 @@ package announcement
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	"golang.org/x/sync/singleflight"
@@ -46,7 +47,11 @@ func (r *AnnouncementRepository) CreateAnn(ctx context.Context, ann *model.Annou
 func (r *AnnouncementRepository) GetAnnByID(ctx context.Context, id uuid.UUID) (*model.Announcement, error) {
 	// 1.1) Попытка из кэша
 	if ann, err := r.Redis.GetAnn(ctx, id); err == nil {
+
+		log.Println("🟢 Кэш найден")
 		return ann, nil
+	} else {
+		log.Printf("🔴 Кэш не найден: %v", err)
 	}
 
 	// 1.2) Cache-miss: дедупликация запросов к БД
@@ -111,14 +116,6 @@ func (r *AnnouncementRepository) GetUserAnns(ctx context.Context, userID uuid.UU
 			return nil, err
 		}
 
-		//go func(u *model.Announcement) {
-		//	// 1.2.2) Кэшируем хешом
-		//	if _, err = r.Redis.CreateAnn(ctx, ann); err != nil {
-		//		// log.Warnf("redis HSET failed: %v", err)
-		//	}
-		//
-		//}(ann)
-
 		return ann, nil
 	})
 
@@ -137,17 +134,17 @@ func (r *AnnouncementRepository) UpdateAnnouncement(ctx context.Context, ann *mo
 			return nil, err
 		}
 
-		//go func(u *model.Announcement) {
-		//	// 1.2.2) Кэшируем хешом
-		//	if err := r.Redis.Delete(ctx, ann.ID); err != nil {
-		//		// log.Warnf("redis HSET failed: %v", err)
-		//	}
-		//
-		//	if _, err := r.Redis.CreateAnn(ctx, ann); err != nil {
-		//		// log.Warnf("redis HSET failed: %v", err)
-		//	}
-		//
-		//}(ann)
+		go func(u *model.Announcement) {
+			// 1.2.2) Кэшируем хешом
+			if err := r.Redis.Delete(ctx, ann.ID); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
+			}
+
+			if _, err := r.Redis.CreateAnn(ctx, ann); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
+			}
+
+		}(ann)
 
 		return nil, nil
 	})
@@ -168,7 +165,6 @@ func (r *AnnouncementRepository) DeleteAnnByID(ctx context.Context, id uuid.UUID
 		go func(id uuid.UUID) {
 			// 1.2.2) Кэшируем хешом
 			if err = r.Redis.Delete(ctx, id); err != nil {
-				// log.Warnf("redis HSET failed: %v", err)
 			}
 
 		}(id)
@@ -188,17 +184,17 @@ func (r *AnnouncementRepository) UpdateModerationStatusAnnouncement(ctx context.
 			return nil, err
 		}
 
-		//go func(u *model.Announcement) {
-		//	// 1.2.2) Кэшируем хешом
-		//	if err := r.Redis.Delete(ctx, ann.ID); err != nil {
-		//		// log.Warnf("redis HSET failed: %v", err)
-		//	}
-		//
-		//	if _, err := r.Redis.CreateAnn(ctx, ann); err != nil {
-		//		// log.Warnf("redis HSET failed: %v", err)
-		//	}
-		//
-		//}(ann)
+		go func(u *model.Announcement) {
+			// 1.2.2) Кэшируем хешом
+			if err := r.Redis.Delete(ctx, ann.ID); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
+			}
+
+			if _, err := r.Redis.CreateAnn(ctx, ann); err != nil {
+				// log.Warnf("redis HSET failed: %v", err)
+			}
+
+		}(ann)
 
 		return nil, nil
 	})
