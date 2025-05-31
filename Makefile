@@ -1,9 +1,3 @@
-run:	build
-	./main
-
-build:
-	go build cmd/lost-items-service/main.go
-
 # Убираем моки из покрытия
 PKGS=$(shell go list ./... | grep -vE '/(test)')
 COVERPKG=$(shell go list ./... | grep -vE '/(mocks|test)' | paste -sd, -)

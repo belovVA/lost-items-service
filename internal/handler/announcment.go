@@ -164,6 +164,7 @@ func (h *AnnHandlers) GetAnnouncement(w http.ResponseWriter, r *http.Request) {
 		logger.Info("error get Ann", slog.String(ErrorKey, err.Error()), slog.String("AnnID", annID.String()))
 		return
 	}
+	log.Println(ann)
 
 	response.SuccessJSON(w, converter.ToAnnouncementResponseFromModel(ann), http.StatusCreated)
 

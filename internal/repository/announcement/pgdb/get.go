@@ -80,9 +80,8 @@ func (r *annRepo) GetListAnnouncement(ctx context.Context, info *model.InfoSetti
 		req = req.Where(sq.Eq{annSearchedStatusColumn: boolVal})
 	}
 	if limits.Search != "" {
-		req = req.Where(`
-		search_vector @@ plainto_tsquery('russian', unaccent($1))
-	`, limits.Search)
+		searchQuery := fmt.Sprintf("plainto_tsquery('russian', unaccent('%s'))", limits.Search)
+		req = req.Where("search_vector @@ " + searchQuery)
 	}
 	if limits.TimeRange != nil {
 		req = req.Where(sq.GtOrEq{annDateColumn: limits.TimeRange})
