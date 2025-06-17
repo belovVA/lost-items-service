@@ -27,6 +27,7 @@ services:
       retries: 5
       start_period: 10s
     volumes:
+      - postgres_data:/var/lib/postgresql/data  # Основные данные БД
       - ./migrations/up:/docker-entrypoint-initdb.d
 
     networks:
@@ -44,6 +45,9 @@ services:
       start_period: 5s
     networks:
       - internal
+
+volumes:
+  postgres_data:
 
 networks:
   internal:

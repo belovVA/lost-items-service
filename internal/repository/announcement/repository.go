@@ -108,10 +108,10 @@ func (r *AnnouncementRepository) GetAnnsList(ctx context.Context, info *model.In
 }
 
 func (r *AnnouncementRepository) GetUserAnns(ctx context.Context, userID uuid.UUID, info *model.InfoSetting) ([]*model.Announcement, error) {
-	groupKey := fmt.Sprintf("%s:%s:%d:%d:%s", info.OrderByField, info.Search, info.Page, info.Limit, info.TimeOrder)
+	groupKey := fmt.Sprintf("user%s:%s:%d:%d:%s", info.OrderByField, info.Search, info.Page, info.Limit, info.TimeOrder)
 	v, err, _ := r.group.Do(groupKey, func() (interface{}, error) {
 		// 1.2.1) Читаем из Postgres
-		ann, err := r.Pg.GetListAnnouncement(ctx, info)
+		ann, err := r.Pg.GetAnnsByUserID(ctx, userID, info)
 		if err != nil {
 			return nil, err
 		}
